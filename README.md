@@ -18,7 +18,7 @@
 
 ## Set up
 
-+ Create dir as following
++ Create dir as follows:
 
 ├── children
 
