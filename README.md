@@ -17,7 +17,13 @@
 + `edge_attrs`: [num_edges, num_text_feature] (from edge-text embeddings)
 
 ## Set up
-
++ Get data:
+```
+!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/byGenre/goodreads_reviews_children.json.gz -O goodreads_reviews_children.json.gz
+!gzip -d goodreads_reviews_children.json.gz
+!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book_genres_initial.json.gz -O goodreads_book_genres_initial.json.gz
+!gzip -d goodreads_book_genres_initial.json.gz
+```
 + Create dir as follows:
 
 ```
@@ -40,7 +46,7 @@ python multi_label_classification.py
 
 ## Reference
 
-Please read following materials carefully to set up your own dataset!
+Please read the following materials carefully to set up your dataset!
 
 + [pyg graph dataset](https://pytorch-geometric.readthedocs.io/en/latest/notes/create_dataset.html)
 + [ogbn-mag HeteroData example](https://pytorch-geometric.readthedocs.io/en/latest/_modules/torch_geometric/datasets/ogb_mag.html)
