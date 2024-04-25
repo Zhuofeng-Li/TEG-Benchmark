@@ -18,15 +18,25 @@
 
 ## Set up
 
-+ Create dir as following
++ Create dir as follows:
 
-├── children
+```
+  ├─children
+  |    ├─goodreads_children.py
+  |    ├─__init__.py
+  |    ├─raw
+  |    |  ├─goodreads_book_genres_initial.json
+  |    |  └goodreads_reviews_children.json
+```
 
-│  ├── raw
+## Downstream Tasks
 
-│  │  ├── goodreads_reviews_children.json
+### Multi-label classification
 
-│  │  ├── goodreads_reviews_children.json
+```
+cd downstream_tasks/
+python multi_label_classification.py
+```
 
 ## Reference
 

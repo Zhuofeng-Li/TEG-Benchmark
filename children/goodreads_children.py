@@ -90,7 +90,7 @@ class Goodreads_children(InMemoryDataset):
         num_books = len(book_id2idx)
 
         data = HeteroData()
-        data['user'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_users, 1))
+        data['user'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_users, 1))  # TODO
         data['book'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_books, 1))
         data['book'].y = torch.tensor(multi_label).float()
         data['user', 'reviews', 'book'].edge_index = torch.tensor(edge_index_user_book,
