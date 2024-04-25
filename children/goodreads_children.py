@@ -67,7 +67,9 @@ class Goodreads_children(InMemoryDataset):
 
         user_id2idx = {}
         book_id2idx = {}
+
         edge_index_user_book = []
+        edge_label = []
 
         multi_label = []
         for item in final_data:
@@ -84,6 +86,8 @@ class Goodreads_children(InMemoryDataset):
             edge_index_user_book.append([user_id2idx[user_id], book_id2idx[book_id]])
             # book label
             multi_label.append(bookid2genre[book_id])
+            # edge label (rating)
+            edge_label.append(item['rating'])
 
         # load to hetordata
         num_users = len(user_id2idx)
@@ -95,6 +99,8 @@ class Goodreads_children(InMemoryDataset):
         data['book'].y = torch.tensor(multi_label).float()
         data['user', 'reviews', 'book'].edge_index = torch.tensor(edge_index_user_book,
                                                                   dtype=torch.long).t().contiguous()
+
+        data['user', 'reviews', 'book'].edge_label = torch.tensor(edge_label)
 
         torch.manual_seed(66)
         torch.cuda.manual_seed(66)
