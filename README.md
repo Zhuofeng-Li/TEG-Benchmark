@@ -32,7 +32,7 @@
 
 │  │  ├── goodreads_reviews_children.json
 
-│  │  ├── goodreads_book_genres_initial
+│  │  ├── goodreads_book_genres_initial.json
 
 ## Reference
 
