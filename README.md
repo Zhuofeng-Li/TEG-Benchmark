@@ -15,16 +15,22 @@
 + `y`: [num_nodes, num_classes]
 + `edge_index`: [2, num_edges]
 + `edge_attrs`: [num_edges, num_text_feature] (from edge-text embeddings)
++ `edge_label`: [num_edges] (review rating)
 
 ## Set up
+
 + Get data:
-```
+
+``` 
 !wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/byGenre/goodreads_reviews_children.json.gz -O goodreads_reviews_children.json.gz
 !gzip -d goodreads_reviews_children.json.gz
 !wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book_genres_initial.json.gz -O goodreads_book_genres_initial.json.gz
 !gzip -d goodreads_book_genres_initial.json.gz
+!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_books_children.json.gz -O goodreads_books_children.json.gz
+!gzip -d goodreads_books_children.json.gz
 ```
-+ Create dir as follows:
+
++ we provide tow types of goodreads_children datasets: (1) user-review-book. (2) user-review-book, book-description-genre. Set up dataset as follows:
 
 ```
   ├─children
@@ -33,6 +39,17 @@
   |    ├─raw
   |    |  ├─goodreads_book_genres_initial.json
   |    |  └goodreads_reviews_children.json
+
+```
+
+```
+├─children_genre
+|       ├─goodreads_children_genre.py
+        |─__init__.py
+|       ├─raw
+|       |  ├─goodreads_books_children.json
+|       |  ├─goodreads_book_genres_initial.json
+|       |  └goodreads_reviews_children.json
 ```
 
 ## Downstream Tasks
