@@ -97,10 +97,10 @@ class Goodreads_children(InMemoryDataset):
         data['user'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_users, 1))  # TODO
         data['book'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_books, 1))
         data['book'].y = torch.tensor(multi_label).float()
-        data['user', 'reviews', 'book'].edge_index = torch.tensor(edge_index_user_book,
+        data['user', 'review', 'book'].edge_index = torch.tensor(edge_index_user_book,
                                                                   dtype=torch.long).t().contiguous()
 
-        data['user', 'reviews', 'book'].edge_label = torch.tensor(edge_label)
+        data['user', 'review', 'book'].edge_label = torch.tensor(edge_label)
 
         torch.manual_seed(66)
         torch.cuda.manual_seed(66)

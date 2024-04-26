@@ -159,7 +159,7 @@ if __name__ == '__main__':
     Goodreads_dataset = Goodreads_children(root='..')
     data = Goodreads_dataset[0]
     encoded_text = np.load(review_embedding_path)
-    data['user', 'reviews', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
+    data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
 
     data = T.ToUndirected()(data)  # To message passing
 
