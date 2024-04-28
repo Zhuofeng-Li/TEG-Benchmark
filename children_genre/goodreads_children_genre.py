@@ -4,6 +4,7 @@ from typing import List
 
 import torch
 from torch_geometric.data import InMemoryDataset, HeteroData
+from tqdm import tqdm
 
 
 class Goodreads_children_genre(InMemoryDataset):
@@ -37,7 +38,7 @@ class Goodreads_children_genre(InMemoryDataset):
         genre_path = osp.join(self.raw_dir, 'goodreads_book_genres_initial.json')
 
         final_data = []
-        bookid2genre = {}
+        final_genre_book = {}
         genres = {'history, historical fiction, biography': 0,
                   'children': 1,
                   'romance': 2,
@@ -59,7 +60,7 @@ class Goodreads_children_genre(InMemoryDataset):
             for line in f:
                 data = json.loads(line)
                 main_genre = max(data['genres'], key=data['genres'].get) if data['genres'] else 'None'
-                bookid2genre[data['book_id']] = genres[main_genre]
+                final_genre_book[data['book_id']] = genres[main_genre]
 
         user_id2idx = {}
         book_id2idx = {}
@@ -67,7 +68,7 @@ class Goodreads_children_genre(InMemoryDataset):
         edge_index_book_genre = []
         edge_label = []
 
-        for item in final_data:
+        for item in tqdm(final_data):
             user_id = item['user_id']
             book_id = item['book_id']
 
@@ -79,9 +80,13 @@ class Goodreads_children_genre(InMemoryDataset):
 
             # user-review-book edge, book-description-genre edge
             edge_index_user_book.append([user_id2idx[user_id], book_id2idx[book_id]])
-            edge_index_book_genre.append([book_id2idx[book_id], bookid2genre[book_id]])
+
             # edge label (rating)
             edge_label.append(item['rating'])
+
+        for book_id, genre in tqdm(final_genre_book.items()):
+            if book_id in book_id2idx:
+                edge_index_book_genre.append([book_id2idx[book_id], genre])
 
         # load to heterodata
         num_users = len(user_id2idx)
