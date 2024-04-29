@@ -56,14 +56,14 @@ gzip -d goodreads_books_children.json.gz
 
 Please refer [Edgeformer](https://openreview.net/pdf?id=2YQrqe4RNv) for more experimental details (we follow its settings completely).
 
-### Multi-label classification
+### Multi-label classification (children dataset)
 
 ```
 cd downstream_tasks/
 python multi_label_classification.py
 ```
 
-### Link prediction
+### Link prediction (children_genre dataset)
 
 ```
 cd downstream_tasks/
