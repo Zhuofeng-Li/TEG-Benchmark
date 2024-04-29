@@ -22,15 +22,15 @@
 + Get data:
 
 ``` 
-!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/byGenre/goodreads_reviews_children.json.gz -O goodreads_reviews_children.json.gz
-!gzip -d goodreads_reviews_children.json.gz
-!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book_genres_initial.json.gz -O goodreads_book_genres_initial.json.gz
-!gzip -d goodreads_book_genres_initial.json.gz
-!wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_books_children.json.gz -O goodreads_books_children.json.gz
-!gzip -d goodreads_books_children.json.gz
+wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/byGenre/goodreads_reviews_children.json.gz -O goodreads_reviews_children.json.gz
+gzip -d goodreads_reviews_children.json.gz
+wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book_genres_initial.json.gz -O goodreads_book_genres_initial.json.gz
+gzip -d goodreads_book_genres_initial.json.gz
+wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_books_children.json.gz -O goodreads_books_children.json.gz
+gzip -d goodreads_books_children.json.gz
 ```
 
-+ we provide tow types of goodreads_children datasets: (1) user-review-book. (2) user-review-book, book-description-genre. Set up dataset as follows:
++ we provide tow types of goodreads_children datasets: (1) `children` dataset consists of user-review-book. (2) `children_genre` dataset consists of user-review-book, book-description-genre. Set up dataset as follows:
 
 ```
   ├─children
