@@ -54,11 +54,20 @@ gzip -d goodreads_books_children.json.gz
 
 ## Downstream Tasks
 
+Please refer [Edgeformer](https://openreview.net/pdf?id=2YQrqe4RNv) for more experimental details (we follow its settings completely).
+
 ### Multi-label classification
 
 ```
 cd downstream_tasks/
 python multi_label_classification.py
+```
+
+### Link prediction
+
+```
+cd downstream_tasks/
+python link_prediction.py
 ```
 
 ## Reference
