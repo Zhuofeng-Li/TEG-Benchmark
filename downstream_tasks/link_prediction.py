@@ -7,9 +7,8 @@ from children_genre.goodreads_children_genre import Goodreads_children_genre
 from sklearn.metrics import roc_auc_score
 from torch_geometric import seed_everything
 from torch_geometric.loader import LinkNeighborLoader
-from torch_geometric.nn import HeteroConv
-# from transformer_conv import TransformerConv
-from torch_geometric.nn import TransformerConv
+from torch_geometric.nn.conv import HeteroConv
+from torch_geometric.nn.conv import TransformerConv
 
 
 class HeteroGNN(torch.nn.Module):
@@ -62,7 +61,7 @@ class Model(torch.nn.Module):
             "book": self.book_emb(data["book"].n_id),
             "genre": self.book_emb(data["genre"].n_id),
         }
-        x_dict = self.heteroGNN(x_dict, data.edge_index_dict, data.edge_attr_dict)
+        x_dict = self.heteroGNN(x_dict, data.edge_index_dict, edge_attr_dict=data.edge_attr_dict)
         pred = self.classifier(
             x_dict["user"],
             x_dict["book"],
@@ -120,7 +119,7 @@ if __name__ == "__main__":
 
     # select 4-star or 5-star review as the positive edge
     positive_edges_mask = (data['user', 'review', 'book'].edge_label == 5) | (
-                data['user', 'review', 'book'].edge_label == 4)
+            data['user', 'review', 'book'].edge_label == 4)
     data['user', 'review', 'book'].edge_index = data['user', 'review', 'book'].edge_index[:, positive_edges_mask]
     data['user', 'review', 'book'].edge_attr = data['user', 'review', 'book'].edge_attr[positive_edges_mask]
 
@@ -176,14 +175,14 @@ if __name__ == "__main__":
 
     model = Model(hidden_channels=64, edge_dim=3072, num_layers=2)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Device: '{device}'")
+    print(device)
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     for epoch in range(1, 50):
         total_loss = total_examples = 0
         for sampled_data in tqdm.tqdm(train_loader):
             optimizer.zero_grad()
-            sampled_data.to(device)
+            sampled_data = sampled_data.to(device)
             pred = model(sampled_data)
             ground_truth = sampled_data["user", "review", "book"].edge_label
             loss = F.binary_cross_entropy_with_logits(pred, ground_truth)
@@ -198,7 +197,7 @@ if __name__ == "__main__":
     ground_truths = []
     for sampled_data in tqdm.tqdm(val_loader):
         with torch.no_grad():
-            sampled_data.to(device)
+            sampled_data = sampled_data.to(device)
             preds.append(model(sampled_data))
             ground_truths.append(sampled_data["user", "review", "book"].edge_label)  # TODO
     pred = torch.cat(preds, dim=0).cpu().numpy()
@@ -212,7 +211,7 @@ if __name__ == "__main__":
     count = accc = auc = mrr = ndcg = 0
     for sampled_data in tqdm.tqdm(test_loader):
         with torch.no_grad():
-            sampled_data.to(device)
+            sampled_data = sampled_data.to(device)
             modelpreds = model(sampled_data)
             ground_truths = sampled_data["user", "review", "book"].edge_label
             ground_truth.append(ground_truths.cpu().numpy())

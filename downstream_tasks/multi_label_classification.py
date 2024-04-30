@@ -19,6 +19,9 @@ class HeteroGNN(torch.nn.Module):
     def __init__(self, hidden_channels, out_channels, edge_dim, num_layers):
         super().__init__()
 
+        self.user_emb = torch.nn.Embedding(data["user"].num_nodes, hidden_channels)
+        self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
+
         self.convs = torch.nn.ModuleList()
         for _ in range(num_layers):
             conv = HeteroConv({
@@ -30,20 +33,17 @@ class HeteroGNN(torch.nn.Module):
 
         self.lin = Linear(hidden_channels, out_channels)
 
-    def forward(self, x_dict, edge_index_dict, edge_attr_dict):
+    def forward(self, data):
+        x_dict = {
+            "user": self.user_emb(data["user"].n_id),
+            "book": self.book_emb(data["book"].n_id),
+        }
+
         for conv in self.convs:
-            x_dict = conv(x_dict, edge_index_dict, edge_attr_dict=edge_attr_dict)
+            x_dict = conv(x_dict, data.edge_index_dict, edge_attr_dict=data.edge_attr_dict)
             x_dict = {key: x.relu() for key, x in x_dict.items()}
         res = self.lin(x_dict['book'])
         return torch.sigmoid(res)
-
-
-@torch.no_grad()
-def init_params():
-    # Initialize lazy parameters via forwarding a single batch to the model:
-    batch = next(iter(train_loader))
-    batch = batch.to(device, 'edge_attr', 'edge_index')
-    model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict)
 
 
 def train():
@@ -54,9 +54,9 @@ def train():
 
     for batch in train_loader:
         optimizer.zero_grad()
-        batch = batch.to(device, 'edge_index', 'edge_attr', 'x', 'y')
+        batch = batch.to(device)
         batch_size = batch['book'].batch_size
-        out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict)
+        out = model(batch)
 
         loss = criterion(out, batch['book'].y[:batch_size].squeeze())
         loss.backward()
@@ -76,10 +76,10 @@ def test(loader):
     metrics_total = defaultdict(float)
     preds = np.zeros(10)[None, :]
     for batch in loader:
-        batch = batch.to(device, 'edge_index', 'edge_attr', 'x', 'y')
+        batch = batch.to(device)
         batch_size = batch['book'].batch_size
 
-        out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict)
+        out = model(batch)
         predictions = torch.argmax(out, dim=-1).cpu().detach().numpy()
         out = out.cpu().detach().numpy()
         metrics, pred = evaluator(out, batch['book'].y[:batch_size].squeeze().cpu().detach().numpy(), predictions)
@@ -153,10 +153,7 @@ review_embedding_path = '/root/autodl-tmp/Graph_LLM_link_predcition-main/NELL/ge
 epcho = 1000
 
 if __name__ == '__main__':
-
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-
-    Goodreads_dataset = Goodreads_children(root='..')
+    Goodreads_dataset = Goodreads_children(root='.')
     data = Goodreads_dataset[0]
     encoded_text = np.load(review_embedding_path)
     data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
@@ -189,14 +186,13 @@ if __name__ == '__main__':
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    data = data.to(device, 'x', 'y')  # TODO: mask need device?
+    print(device)
 
     # weight for unbalanced classes
     weight = data['book'].y.long().sum(0)
     weight = weight.max() / weight
 
     model = HeteroGNN(hidden_channels=64, out_channels=data.num_classes, edge_dim=5120, num_layers=2).to(device)
-    init_params()  # Initialize parameters.
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
     loss_list = []
