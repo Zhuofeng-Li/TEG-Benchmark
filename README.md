@@ -6,8 +6,8 @@
 
 ## Introduction
 
-+ We only select `user` and `book` as nodes, `review` as edge, `book genre` as multi-label
-+ Our task is multi-label node classification
++ We only select `user` and `book` as nodes, `review` as the edge, `book genre` as the multi-label
++ Our tasks are multi-label node classification, link prediction, edge classification
 
 ## Data
 
