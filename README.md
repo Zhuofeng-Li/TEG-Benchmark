@@ -6,8 +6,8 @@
 
 ## Introduction
 
-+ We only select `user` and `book` as nodes, `review` as edge, `book genre` as multi-label
-+ Our task is multi-label node classification
++ We only select `user` and `book` as nodes, `review` as the edge, and `book genre` as the multi-label.
++ Our tasks are multi-label node classification, link prediction, and edge classification.
 
 ## Data
 
@@ -30,7 +30,7 @@ wget https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/goodreads/goodreads_book
 gzip -d goodreads_books_children.json.gz
 ```
 
-+ we provide tow types of goodreads_children datasets: (1) `children` dataset consists of user-review-book. (2) `children_genre` dataset consists of user-review-book, book-description-genre. Set up dataset as follows:
++ we provide tow types of goodreads_children datasets: (1) `children` dataset consists of user-review-book. (2) `children_genre` dataset consists of user-review-book, book-description-genre. Set up the dataset as follows:
 
 ```
   ├─children
