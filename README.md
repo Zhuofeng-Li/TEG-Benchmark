@@ -70,6 +70,13 @@ cd downstream_tasks/
 python link_prediction.py
 ```
 
+### Link prediction (children dataset)
+
+```
+cd downstream_tasks/
+python edge_classification.py
+```
+
 ## Reference
 
 Please read the following materials carefully to set up your dataset!
