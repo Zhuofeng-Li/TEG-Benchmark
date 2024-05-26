@@ -7,7 +7,7 @@ from torch_geometric.data import InMemoryDataset, HeteroData
 from tqdm import tqdm
 
 
-class Goodreads_children_genre(InMemoryDataset):
+class Children(InMemoryDataset):
     def __init__(self, root: str) -> None:
         super().__init__(root)
         self.load(self.processed_paths[0], data_cls=HeteroData)
@@ -98,9 +98,9 @@ class Goodreads_children_genre(InMemoryDataset):
         data['genre'].x = torch.nn.init.xavier_uniform_(torch.Tensor(len(genres), 64))
 
         data['user', 'review', 'book'].edge_index = torch.tensor(edge_index_user_book,
-                                                                  dtype=torch.long).t().contiguous()
+                                                                 dtype=torch.long).t().contiguous()
         data['book', 'description', 'genre'].edge_index = torch.tensor(edge_index_book_genre,
-                                                                      dtype=torch.long).t().contiguous()
+                                                                       dtype=torch.long).t().contiguous()
         data['user', 'review', 'book'].edge_label = torch.tensor(edge_label)
 
         self.save([data], self.processed_paths[0])
