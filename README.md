@@ -1,5 +1,5 @@
 # Goodreads children
-
+TODO: update readme
 ## Requirements
 
 + **PyG >= 2.4**
