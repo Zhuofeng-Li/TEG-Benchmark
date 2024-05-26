@@ -7,18 +7,18 @@ from torch_geometric.data import InMemoryDataset, HeteroData
 from tqdm import tqdm
 
 
-class Children(InMemoryDataset):
+class Goodreads_children_genre(InMemoryDataset):
     def __init__(self, root: str) -> None:
         super().__init__(root)
         self.load(self.processed_paths[0], data_cls=HeteroData)
 
     @property
     def raw_dir(self) -> str:
-        return osp.join(self.root, 'children', 'raw')
+        return osp.join(self.root, 'children_dataset', 'raw')
 
     @property
     def processed_dir(self) -> str:
-        return osp.join(self.root, 'children', 'processed')
+        return osp.join(self.root, 'children_dataset', 'processed')
 
     @property
     def raw_file_names(self) -> List[str]:
@@ -93,7 +93,7 @@ class Children(InMemoryDataset):
         num_books = len(book_id2idx)
 
         data = HeteroData()
-        data['user'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_users, 64))  # TODO:
+        data['user'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_users, 64))
         data['book'].x = torch.nn.init.xavier_uniform_(torch.Tensor(num_books, 64))
         data['genre'].x = torch.nn.init.xavier_uniform_(torch.Tensor(len(genres), 64))
 
@@ -104,3 +104,5 @@ class Children(InMemoryDataset):
         data['user', 'review', 'book'].edge_label = torch.tensor(edge_label)
 
         self.save([data], self.processed_paths[0])
+
+
