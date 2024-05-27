@@ -30,19 +30,17 @@ class HeteroGNN(torch.nn.Module):
         self.convs = torch.nn.ModuleList()
 
         if model_type == 'GraphTransformer':
-            self.conv = TransformerConv
+            self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GINE':
-            self.conv = GINEConv
+            self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
         elif model_type == 'Spline':
             self.conv = SplineConv
-        elif model_type == 'GraphSage':
-            self.conv = SAGEEdgeConv
         else:
             NotImplementedError('Model type not implemented')
-
+        
         for _ in range(num_layers):
             conv = HeteroConv({
-                edge_type: self.conv((-1, -1), hidden_channels, edge_dim=edge_dim) for edge_type in
+                edge_type: self.conv for edge_type in
                 data.edge_types
             }, aggr='sum')
 
@@ -104,7 +102,9 @@ if __name__ == "__main__":
     seed_everything(66)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', type=str, default='GraphTransformer',
+    parser.add_argument('--emb_type', '-et', type=str, default='GPT-3.5-TURBO',
+                        help='Model type for HeteroGNN, options are GPT-3.5-TURBO, Bert, Angle, None')
+    parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer',
                         help='Model type for HeteroGNN, options are GraphTransformer, GINE, Spline')
     args = parser.parse_args()
 
@@ -116,12 +116,18 @@ if __name__ == "__main__":
     num_books = data['book'].num_nodes
     num_reviews = data['user', 'review', 'book'].num_edges
     num_descriptions = data["book", "description", "genre"].num_edges
-
-    npdata = np.load('children_genre/raw/review.npy')
-    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-    npdata = np.load('children_genre/raw/edge_attr_book_genre.npy')
-    data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
-    del npdata
+    
+    # load emb
+    if args.emb_type == 'GPT-3.5-TURBO':
+        npdata = np.load('children_dataset/emb/review.npy')
+        data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
+        npdata = np.load('children_dataset/emb/edge_attr_book_genre.npy')
+        data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
+        del npdata
+    elif args.emb_type == 'None':
+        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
+        data['book', 'description', 'genre'].edge_attr = torch.randn(num_descriptions, 3072).squeeze().float()
+    
 
     # select 4-star or 5-star review as the positive edge
     positive_edges_mask = (data['user', 'review', 'book'].edge_label == 5) | (
@@ -209,7 +215,7 @@ if __name__ == "__main__":
                         sampled_data = sampled_data.to(device)
                         pred = model(sampled_data)[0]
                         preds.append(pred)
-                        ground_truths.append(sampled_data["user", "review", "book"].edge_label)  # TODO
+                        ground_truths.append(sampled_data["user", "review", "book"].edge_label)  
                         positive_pred = pred[sampled_data["user", "review", "book"].edge_label == 1].cpu().numpy()
                         negative_pred = pred[sampled_data["user", "review", "book"].edge_label == 0].cpu().numpy()
                     pred = torch.cat(preds, dim=0).cpu().numpy()

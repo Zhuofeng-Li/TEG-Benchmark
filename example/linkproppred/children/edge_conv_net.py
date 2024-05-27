@@ -1,10 +1,9 @@
 import os
 import sys
 
-from models import MLP, EdgeConvConv
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
+from models import MLP, EdgeConvConv
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -108,9 +107,9 @@ if __name__ == "__main__":
     num_reviews = data['user', 'review', 'book'].num_edges
     num_descriptions = data["book", "description", "genre"].num_edges
 
-    npdata = np.load('children_genre/raw/review.npy')
-    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-    npdata = np.load('children_genre/raw/edge_attr_book_genre.npy')
+    npdata = np.load('children_dataset/emb/review.npy')
+    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float() 
+    npdata = np.load('children_dataset/emb/edge_attr_book_genre.npy')
     data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
     del npdata
 
