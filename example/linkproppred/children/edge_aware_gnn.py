@@ -1,10 +1,9 @@
 import sys
 import os
 
-from models import SAGEEdgeConv
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
+from models import SAGEEdgeConv
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -40,7 +39,6 @@ class HeteroGNN(torch.nn.Module):
             self.conv = SAGEEdgeConv
         else:
             NotImplementedError('Model type not implemented')
-
 
         for _ in range(num_layers):
             conv = HeteroConv({
