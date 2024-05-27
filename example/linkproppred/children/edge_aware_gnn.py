@@ -15,8 +15,8 @@ from torch_geometric.loader import LinkNeighborLoader
 from torch_geometric.nn import HeteroConv
 from torch_geometric.nn.conv import TransformerConv
 from torch_geometric.nn.conv import GINEConv
-from torch_geometric.nn.conv import SplineConv
-from torch.nn import Linear
+from torch_geometric.nn.conv import GMMConv
+from torch.nn import Linear, ModuleList
 from sklearn.metrics import f1_score
 import argparse
 
@@ -28,15 +28,15 @@ class HeteroGNN(torch.nn.Module):
         super().__init__()
 
         self.convs = torch.nn.ModuleList()
-
+        self.mlp = torch.nn.ModuleList()
         if model_type == 'GraphTransformer':
             self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GINE':
             self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
         elif model_type == 'EdgeConv':
-            self.conv = EdgeConvConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
-        elif model_type == 'Spline':
-            self.conv = SplineConv
+            self.conv = EdgeConvConv(self.mlp.append(Linear(hidden_channels, hidden_channels)), train_eps=True, edge_dim=edge_dim)
+        elif model_type == 'GMM':
+            self.conv = GMMConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         else:
             NotImplementedError('Model type not implemented')
         

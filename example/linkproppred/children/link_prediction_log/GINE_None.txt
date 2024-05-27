@@ -9,19 +9,15 @@ HeteroData(
   (book, description, genre)={ edge_index=[2, 123946] }
 )
 cuda
-Epoch: 001, Loss: 0.3677
+Epoch: 001, Loss: 0.4099
 Validation begins
-F1 score: 0.8899
-Validation AUC: 0.9489
-Epoch: 002, Loss: 0.2620
+F1 score: 0.8691
+Validation AUC: 0.9353
+Epoch: 002, Loss: 0.2631
 Validation begins
-F1 score: 0.8939
-Validation AUC: 0.9518
-Epoch: 003, Loss: 0.2353
+F1 score: 0.8748
+Validation AUC: 0.9389
+Epoch: 003, Loss: 0.2327
 Validation begins
-F1 score: 0.8912
-Validation AUC: 0.9507
-Epoch: 004, Loss: 0.1980
-Validation begins
-F1 score: 0.8811
-Validation AUC: 0.9457
+F1 score: 0.8567
+Validation AUC: 0.9312
