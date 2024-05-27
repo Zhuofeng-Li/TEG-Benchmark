@@ -36,7 +36,7 @@ class Classifier(torch.nn.Module):
 
 
 class Model(torch.nn.Module):
-    def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
+    def __init__(self, hidden_channels, edge_dim, num_layers):
         super().__init__()
         # Since the dataset does not come with rich features, we also learn two
         # embedding matrices for users and books:
@@ -64,8 +64,8 @@ if __name__ == "__main__":
     seed_everything(66)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', type=str, default='GraphTransformer',
-                        help='Model type for HeteroGNN, options are GraphTransformer, GINE, Spline')
+    parser.add_argument('--emb_type', '-et', type=str, default='GPT-3.5-TURBO',
+                        help='Model type for HeteroGNN, options are GPT-3.5-TURBO, Bert, Angle, None')
     args = parser.parse_args()
 
     Dataset = Children(root='.')
@@ -76,13 +76,17 @@ if __name__ == "__main__":
     num_books = data['book'].num_nodes
     num_reviews = data['user', 'review', 'book'].num_edges
     num_descriptions = data["book", "description", "genre"].num_edges
-
-    npdata = np.load('children_genre/raw/review.npy')
-    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-    npdata = np.load('children_genre/raw/edge_attr_book_genre.npy')
-    data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
-    del npdata
-
+    
+    if args.emb_type == 'GPT-3.5-TURBO':
+        npdata = np.load('children_dataset/emb/review.npy')
+        data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
+        npdata = np.load('children_dataset/emb/edge_attr_book_genre.npy')
+        data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
+        del npdata
+    elif args.emb_type == 'None':
+        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
+        data['book', 'description', 'genre'].edge_attr = torch.randn(num_descriptions, 3072).squeeze().float()
+        
     # select 4-star or 5-star review as the positive edge
     positive_edges_mask = (data['user', 'review', 'book'].edge_label == 5) | (
             data['user', 'review', 'book'].edge_label == 4)
@@ -137,7 +141,7 @@ if __name__ == "__main__":
         shuffle=False,
     )
 
-    model = Model(hidden_channels=256, edge_dim=3072, num_layers=2, model_type=args.model_type)
+    model = Model(hidden_channels=256, edge_dim=3072, num_layers=2)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
 

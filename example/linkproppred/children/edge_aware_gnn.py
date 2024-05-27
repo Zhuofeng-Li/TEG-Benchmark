@@ -15,7 +15,7 @@ from torch_geometric.loader import LinkNeighborLoader
 from torch_geometric.nn import HeteroConv
 from torch_geometric.nn.conv import TransformerConv
 from torch_geometric.nn.conv import GINEConv
-from torch_geometric.nn.conv import GMMConv
+from torch_geometric.nn.conv import GeneralConv
 from torch.nn import Linear, ModuleList
 from sklearn.metrics import f1_score
 import argparse
@@ -28,7 +28,6 @@ class HeteroGNN(torch.nn.Module):
         super().__init__()
 
         self.convs = torch.nn.ModuleList()
-        self.mlp = MLP(hidden_channels, hidden_channels, hidden_channels, num_layers=1)
 
         if model_type == 'GraphSAGE_mean':
             self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
@@ -37,11 +36,11 @@ class HeteroGNN(torch.nn.Module):
         elif model_type == 'GINE':
             self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
         elif model_type == 'EdgeConv':
-            self.conv = EdgeConvConv(self.mlp, train_eps=True, edge_dim=edge_dim)
-        elif model_type == 'GMM':
-            self.conv = GMMConv((-1, -1), hidden_channels, edge_dim=edge_dim)
+            self.conv = EdgeConvConv(Linear(2*hidden_channels + edge_dim, hidden_channels), train_eps=True, edge_dim=edge_dim)
+        elif model_type == 'GeneralConv':
+            self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
         else:
-            NotImplementedError('Model type not implemented')
+            raise NotImplementedError('Model type not implemented')
         
         for _ in range(num_layers):
             conv = HeteroConv({

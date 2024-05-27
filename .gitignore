@@ -155,4 +155,4 @@ nx_graph.pkl
 *.bak
 *~
 
-.example/linkproppred/children/children_dataset
+example/linkproppred/children/children_dataset/
