@@ -21,6 +21,7 @@ class SAGEEdgeConv(MessagePassing):
             self,
             in_channels: Union[int, Tuple[int, int]],
             out_channels: int,
+            edge_dim: int,
             aggr: str = 'mean',
             normalize: bool = False,
             root_weight: bool = True,
@@ -47,7 +48,7 @@ class SAGEEdgeConv(MessagePassing):
             self.fuse = False  # No "fused" message_and_aggregate.
             self.lstm = LSTM(in_channels[0], in_channels[0], batch_first=True)
 
-        self.lin_t = Linear(in_channels[0], in_channels[0], bias=bias)
+        self.lin_t = Linear(edge_dim, in_channels[0], bias=bias)
         self.lin_l = Linear(in_channels[0], out_channels, bias=bias)
         if self.root_weight:
             self.lin_r = Linear(in_channels[1], out_channels, bias=False)
