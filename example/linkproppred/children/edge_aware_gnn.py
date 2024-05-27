@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from models import SAGEEdgeConv, EdgeConvConv
+from models import SAGEEdgeConv, EdgeConvConv, MLP
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -28,15 +28,16 @@ class HeteroGNN(torch.nn.Module):
         super().__init__()
 
         self.convs = torch.nn.ModuleList()
-        self.mlp = torch.nn.ModuleList()
+        self.mlp = MLP(hidden_channels, hidden_channels, hidden_channels, num_layers=1)
+
         if model_type == 'GraphSAGE_mean':
-            self.conv = SAGEEdgeConv(hidden_channels, hidden_channels)
+            self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GraphTransformer':
             self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GINE':
             self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
         elif model_type == 'EdgeConv':
-            self.conv = EdgeConvConv(self.mlp.append(Linear(hidden_channels, hidden_channels)), train_eps=True, edge_dim=edge_dim)
+            self.conv = EdgeConvConv(self.mlp, train_eps=True, edge_dim=edge_dim)
         elif model_type == 'GMM':
             self.conv = GMMConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         else:
