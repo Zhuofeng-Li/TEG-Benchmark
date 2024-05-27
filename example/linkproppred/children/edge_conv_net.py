@@ -1,7 +1,7 @@
-import sys
 import os
+import sys
 
-from models import SAGEEdgeConv
+from models import MLP, EdgeConvConv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
@@ -13,10 +13,7 @@ import tqdm
 from sklearn.metrics import roc_auc_score
 from torch_geometric import seed_everything
 from torch_geometric.loader import LinkNeighborLoader
-from torch_geometric.nn import HeteroConv
-from torch_geometric.nn.conv import TransformerConv
-from torch_geometric.nn.conv import GINEConv
-from torch_geometric.nn.conv import SplineConv
+from torch_geometric.nn import global_add_pool, to_hetero
 from torch.nn import Linear
 from sklearn.metrics import f1_score
 import argparse
@@ -24,38 +21,28 @@ import argparse
 from TAG.linkproppred.children import Children
 
 
-class HeteroGNN(torch.nn.Module):
-    def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
+class EdgeConvNet(torch.nn.Module):
+    def __init__(self, in_channels_nodes, in_channels_edges, hidden_channels, out_channels, num_layers):
         super().__init__()
-
+        self.lin_init_node = MLP(in_channels_nodes, hidden_channels, hidden_channels, num_layers=2)
+        self.lin_init_edge = MLP(in_channels_edges, hidden_channels, hidden_channels, num_layers=2)
         self.convs = torch.nn.ModuleList()
+        for _ in range(num_layers - 1):
+            nn = MLP(hidden_channels * 3, hidden_channels, hidden_channels, num_layers=2)
+            self.convs.append(EdgeConvConv(nn=nn, eps=0.1))
 
-        if model_type == 'GraphTransformer':
-            self.conv = TransformerConv
-        elif model_type == 'GINE':
-            self.conv = GINEConv
-        elif model_type == 'Spline':
-            self.conv = SplineConv
-        elif model_type == 'GraphSage':
-            self.conv = SAGEEdgeConv
-        else:
-            NotImplementedError('Model type not implemented')
+        nn = MLP(hidden_channels * 3, hidden_channels, out_channels, num_layers=2)
+        self.convs.append(EdgeConvConv(nn=nn, eps=0.1))
 
+    def forward(self, x, edge_index, edge_attr, batch):
+        x = self.lin_init_node(x)
+        edge_attr = self.lin_init_edge(edge_attr)
+        for conv in self.convs[:-1]:
+            x = x + conv(x, edge_index, edge_attr)
+            x = F.relu(x)
+        x = self.convs[-1](x, edge_index, edge_attr)
 
-        for _ in range(num_layers):
-            conv = HeteroConv({
-                edge_type: self.conv((-1, -1), hidden_channels, edge_dim=edge_dim) for edge_type in
-                data.edge_types
-            }, aggr='sum')
-
-            self.convs.append(conv)
-
-    def forward(self, x_dict, edge_index_dict, edge_attr_dict):
-        for i, conv in enumerate(self.convs):
-            x_dict = conv(x_dict, edge_index_dict, edge_attr_dict=edge_attr_dict)
-            x_dict = {key: x.relu() for key, x in x_dict.items()} if i != len(
-                self.convs) - 1 else x_dict
-        return x_dict
+        return global_add_pool(x, batch)
 
 
 class Classifier(torch.nn.Module):
@@ -76,14 +63,16 @@ class Classifier(torch.nn.Module):
 
 
 class Model(torch.nn.Module):
-    def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
+    def __init__(self, in_channels_nodes, in_channels_edges, hidden_channels, out_channels, num_layers):
         super().__init__()
         # Since the dataset does not come with rich features, we also learn two
         # embedding matrices for users and books:
         self.user_emb = torch.nn.Embedding(data["user"].num_nodes, hidden_channels)
         self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
         self.genre_emb = torch.nn.Embedding(data["genre"].num_nodes, hidden_channels)
-        self.heteroGNN = HeteroGNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
+        self.heteroGNN = to_hetero(
+            EdgeConvNet(in_channels_nodes, in_channels_edges, hidden_channels, out_channels, num_layers),
+            data.metadata(), aggr='sum')
         self.classifier = Classifier(hidden_channels)
 
     def forward(self, data):

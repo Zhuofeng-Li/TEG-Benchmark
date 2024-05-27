@@ -1,7 +1,5 @@
-import sys
 import os
-
-from models import SAGEEdgeConv
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
@@ -13,49 +11,11 @@ import tqdm
 from sklearn.metrics import roc_auc_score
 from torch_geometric import seed_everything
 from torch_geometric.loader import LinkNeighborLoader
-from torch_geometric.nn import HeteroConv
-from torch_geometric.nn.conv import TransformerConv
-from torch_geometric.nn.conv import GINEConv
-from torch_geometric.nn.conv import SplineConv
 from torch.nn import Linear
 from sklearn.metrics import f1_score
 import argparse
 
 from TAG.linkproppred.children import Children
-
-
-class HeteroGNN(torch.nn.Module):
-    def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
-        super().__init__()
-
-        self.convs = torch.nn.ModuleList()
-
-        if model_type == 'GraphTransformer':
-            self.conv = TransformerConv
-        elif model_type == 'GINE':
-            self.conv = GINEConv
-        elif model_type == 'Spline':
-            self.conv = SplineConv
-        elif model_type == 'GraphSage':
-            self.conv = SAGEEdgeConv
-        else:
-            NotImplementedError('Model type not implemented')
-
-
-        for _ in range(num_layers):
-            conv = HeteroConv({
-                edge_type: self.conv((-1, -1), hidden_channels, edge_dim=edge_dim) for edge_type in
-                data.edge_types
-            }, aggr='sum')
-
-            self.convs.append(conv)
-
-    def forward(self, x_dict, edge_index_dict, edge_attr_dict):
-        for i, conv in enumerate(self.convs):
-            x_dict = conv(x_dict, edge_index_dict, edge_attr_dict=edge_attr_dict)
-            x_dict = {key: x.relu() for key, x in x_dict.items()} if i != len(
-                self.convs) - 1 else x_dict
-        return x_dict
 
 
 class Classifier(torch.nn.Module):
@@ -83,7 +43,6 @@ class Model(torch.nn.Module):
         self.user_emb = torch.nn.Embedding(data["user"].num_nodes, hidden_channels)
         self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
         self.genre_emb = torch.nn.Embedding(data["genre"].num_nodes, hidden_channels)
-        self.heteroGNN = HeteroGNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
         self.classifier = Classifier(hidden_channels)
 
     def forward(self, data):
@@ -92,7 +51,6 @@ class Model(torch.nn.Module):
             "book": self.book_emb(data["book"].n_id),
             "genre": self.book_emb(data["genre"].n_id),
         }
-        x_dict = self.heteroGNN(x_dict, data.edge_index_dict, edge_attr_dict=data.edge_attr_dict)
         pred = self.classifier(
             x_dict["user"],
             x_dict["book"],
