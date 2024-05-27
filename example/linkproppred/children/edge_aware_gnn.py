@@ -28,9 +28,10 @@ class HeteroGNN(torch.nn.Module):
         super().__init__()
 
         self.convs = torch.nn.ModuleList()
-        self.mlp = torch.nn.ModuleList()
+        self.mlp = 
+        
         if model_type == 'GraphSAGE_mean':
-            self.conv = SAGEEdgeConv(hidden_channels, hidden_channels)
+            self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GraphTransformer':
             self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GINE':
