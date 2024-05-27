@@ -23,10 +23,10 @@ class EdgeConvConv(MessagePassing):
         else:
             self.register_buffer('eps', torch.Tensor([eps]))
         if edge_dim is not None:
-            if hasattr(self.nn[0], 'in_features'):
-                in_channels = self.nn[0].in_features
+            if hasattr(self.nn, 'in_features'):
+                in_channels = self.nn.in_features
             else:
-                in_channels = self.nn[0].in_channels
+                in_channels = self.nn.in_channels
             self.lin = Linear(edge_dim, in_channels)
         else:
             self.lin = None
