@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from models import SAGEEdgeConv
+from models import SAGEEdgeConv, EdgeConvConv
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -33,6 +33,8 @@ class HeteroGNN(torch.nn.Module):
             self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GINE':
             self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
+        elif model_type == 'EdgeConv':
+            self.conv = EdgeConvConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
         elif model_type == 'Spline':
             self.conv = SplineConv
         else:

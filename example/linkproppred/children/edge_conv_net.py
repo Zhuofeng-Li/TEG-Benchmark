@@ -62,7 +62,7 @@ class Classifier(torch.nn.Module):
 
 
 class Model(torch.nn.Module):
-    def __init__(self, in_channels_nodes, in_channels_edges, hidden_channels, out_channels, num_layers):
+    def __init__(self, hidden_channels, edge_dim, num_layers):
         super().__init__()
         # Since the dataset does not come with rich features, we also learn two
         # embedding matrices for users and books:
@@ -70,7 +70,8 @@ class Model(torch.nn.Module):
         self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
         self.genre_emb = torch.nn.Embedding(data["genre"].num_nodes, hidden_channels)
         self.heteroGNN = to_hetero(
-            EdgeConvNet(in_channels_nodes, in_channels_edges, hidden_channels, out_channels, num_layers),
+            EdgeConvNet(in_channels_nodes=hidden_channels, in_channels_edges=edge_dim, hidden_channels=hidden_channels,
+                        out_channels=hidden_channels, num_layers=num_layers),
             data.metadata(), aggr='sum')
         self.classifier = Classifier(hidden_channels)
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     num_descriptions = data["book", "description", "genre"].num_edges
 
     npdata = np.load('children_dataset/emb/review.npy')
-    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float() 
+    data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
     npdata = np.load('children_dataset/emb/edge_attr_book_genre.npy')
     data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
     del npdata
@@ -167,7 +168,7 @@ if __name__ == "__main__":
         shuffle=False,
     )
 
-    model = Model(hidden_channels=256, edge_dim=3072, num_layers=2, model_type=args.model_type)
+    model = Model(hidden_channels=256, edge_dim=3072, num_layers=2)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
 
