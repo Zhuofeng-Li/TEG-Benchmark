@@ -15,22 +15,38 @@ HeteroData(
 )
 cuda
 Validation begins
-F1 score: 0.5207
-Validation micro AUC: 0.8627
-Validation micro ACC : 0.8335
+F1 score: 0.5326
+Validation micro AUC: 0.8641
+Validation micro ACC : 0.8336
 Validation begins
-F1 score: 0.5710
-Validation micro AUC: 0.8675
-Validation micro ACC : 0.8348
+F1 score: 0.5907
+Validation micro AUC: 0.8697
+Validation micro ACC : 0.8370
 Validation begins
-F1 score: 0.5921
-Validation micro AUC: 0.8720
-Validation micro ACC : 0.8375
+F1 score: 0.6030
+Validation micro AUC: 0.8714
+Validation micro ACC : 0.8374
 Validation begins
-F1 score: 0.6227
-Validation micro AUC: 0.8713
-Validation micro ACC : 0.8364
+F1 score: 0.6150
+Validation micro AUC: 0.8694
+Validation micro ACC : 0.8360
 Validation begins
-F1 score: 0.6151
-Validation micro AUC: 0.8670
-Validation micro ACC : 0.8328
+F1 score: 0.6411
+Validation micro AUC: 0.8669
+Validation micro ACC : 0.8299
+Validation begins
+F1 score: 0.6369
+Validation micro AUC: 0.8646
+Validation micro ACC : 0.8262
+Validation begins
+F1 score: 0.6437
+Validation micro AUC: 0.8587
+Validation micro ACC : 0.8164
+Validation begins
+F1 score: 0.6520
+Validation micro AUC: 0.8564
+Validation micro ACC : 0.8099
+Validation begins
+F1 score: 0.6593
+Validation micro AUC: 0.8533
+Validation micro ACC : 0.8071

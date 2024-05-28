@@ -2,7 +2,7 @@
 
 # # MLP
 
-# # With GPT-3.5-TURBO Embedding:
+# With GPT-3.5-TURBO Embedding:
 python mlp.py -et GPT-3.5-TURBO > node_classification_log/MLP_GPT-3.5-TURBO.txt
 
 # Without Embedding:
