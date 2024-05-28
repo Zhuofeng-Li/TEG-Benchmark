@@ -158,3 +158,5 @@ nx_graph.pkl
 example/linkproppred/children/children_dataset/
 example/linkproppred/crime/crime_dataset
 example/nodeproppred/children/children_dataset/
+example/nodeproppred/*/*_dataset/
+example/linkproppred/*/*_dataset/
