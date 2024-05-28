@@ -3,17 +3,12 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from models import SAGEEdgeConv, EdgeConvConv
 import numpy as np
 import torch
 import torch_geometric.transforms as T
 import tqdm
 from sklearn.metrics import roc_auc_score
 from torch_geometric.loader import HGTLoader
-from torch_geometric.nn import HeteroConv
-from torch_geometric.nn.conv import TransformerConv
-from torch_geometric.nn.conv import GINEConv
-from torch_geometric.nn.conv import GeneralConv
 from torch.nn import Linear
 from sklearn.metrics import f1_score, accuracy_score
 import argparse
