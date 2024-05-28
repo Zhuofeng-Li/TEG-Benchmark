@@ -162,7 +162,7 @@ if __name__ == '__main__':
     criterion = criterion.to(device)
 
 
-    for epoch in range(1, 6):
+    for epoch in range(1, 10):
         model.train()
         total_examples = total_loss = 0
 
