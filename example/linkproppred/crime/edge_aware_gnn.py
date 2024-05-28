@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--emb_type', '-et', type=str, default='GPT-3.5-TURBO',
-                        help='Model type for HeteroGNN, options are GPT-3.5-TURBO, Bert, Angle, None')
+                        help='embedding type for HeteroGNN, options are GPT-3.5-TURBO, Bert, Angle, None')
     parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer',
                         help='Model type for HeteroGNN, options are GraphTransformer, GINE, Spline')
     args = parser.parse_args()
