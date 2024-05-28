@@ -27,7 +27,7 @@ class HeteroGNN(torch.nn.Module):
 
         self.convs = torch.nn.ModuleList()
 
-        if model_type == 'GraphSAGE_mean':
+        if model_type == 'GraphSAGE':
             self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
         elif model_type == 'GraphTransformer':
             self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         encoded_text = np.load('children_dataset/emb/review.npy')
         data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
     elif args.emb_type == 'None':
-        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 256).squeeze().float()
+        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
 
     data = T.ToUndirected()(data)  # To message passing
 
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     criterion = criterion.to(device)
 
 
-    for epoch in range(1, 10):
+    for epoch in range(1, 6):
         model.train()
         total_examples = total_loss = 0
 

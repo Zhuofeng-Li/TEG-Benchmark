@@ -1,0 +1,36 @@
+HeteroData(
+  num_classes=10,
+  user={ x=[92667, 64] },
+  book={
+    x=[123946, 64],
+    y=[123946, 10],
+    train_mask=[123946],
+    val_mask=[123946],
+    test_mask=[123946],
+  },
+  (user, review, book)={
+    edge_index=[2, 734640],
+    edge_label=[734640],
+  }
+)
+cuda
+Validation begins
+F1 score: 0.6711
+Validation micro AUC: 0.8958
+Validation micro ACC : 0.8432
+Validation begins
+F1 score: 0.7424
+Validation micro AUC: 0.9209
+Validation micro ACC : 0.8655
+Validation begins
+F1 score: 0.7653
+Validation micro AUC: 0.9284
+Validation micro ACC : 0.8721
+Validation begins
+F1 score: 0.7669
+Validation micro AUC: 0.9304
+Validation micro ACC : 0.8774
+Validation begins
+F1 score: 0.7777
+Validation micro AUC: 0.9324
+Validation micro ACC : 0.8800
