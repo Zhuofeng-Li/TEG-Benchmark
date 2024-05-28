@@ -85,12 +85,10 @@ class Children(InMemoryDataset):
                 user_id2idx[user_id] = len(user_id2idx)
             if book_id not in book_id2idx:
                 book_id2idx[book_id] = len(book_id2idx)
+                multi_label.append(bookid2genre[book_id])
 
             # user - book edge
             edge_index_user_book.append([user_id2idx[user_id], book_id2idx[book_id]])
-
-            # book label
-            multi_label.append(bookid2genre[book_id])
 
             # edge label (rating)
             edge_label.append(item['rating'])
