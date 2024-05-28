@@ -56,7 +56,7 @@ class Model(torch.nn.Module):
 
 
 if __name__ == '__main__':
-    Goodreads_dataset = Children(root='..')
+    Goodreads_dataset = Children(root='.')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_type', '-dt', type=str, default='children',

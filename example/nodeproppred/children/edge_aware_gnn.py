@@ -18,7 +18,7 @@ from torch.nn import Linear
 from sklearn.metrics import f1_score
 import argparse
 
-from TAG.linkproppred.children import Children
+from TAG.nodeproppred.children import Children
 
 
 class HeteroGNN(torch.nn.Module):
@@ -94,7 +94,7 @@ class Model(torch.nn.Module):
 
 
 if __name__ == '__main__':
-    Goodreads_dataset = Children(root='..')
+    Goodreads_dataset = Children(root='.')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_type', '-dt', type=str, default='children',
