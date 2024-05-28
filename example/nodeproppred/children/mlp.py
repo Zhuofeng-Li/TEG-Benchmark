@@ -24,7 +24,7 @@ from TAG.linkproppred.children import Children
 class Classifier(torch.nn.Module):
     def __init__(self, hidden_channels, out_channels):
         super().__init__()
-        self.lin1 = Linear(hidden_channels, hidden_channels / 4)
+        self.lin1 = Linear(hidden_channels, hidden_channels // 4)
         self.lin2 = Linear(hidden_channels, out_channels)
 
     def forward(self, x_book):
