@@ -15,17 +15,17 @@ from torch_geometric.nn.conv import TransformerConv
 from torch_geometric.nn.conv import GINEConv
 from torch_geometric.nn.conv import GeneralConv
 from torch.nn import Linear
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, accuracy_score
 import argparse
 
-from TAG.linkproppred.children import Children
+from TAG.nodeproppred.children import Children
 
 
 class Classifier(torch.nn.Module):
     def __init__(self, hidden_channels, out_channels):
         super().__init__()
         self.lin1 = Linear(hidden_channels, hidden_channels // 4)
-        self.lin2 = Linear(hidden_channels, out_channels)
+        self.lin2 = Linear(hidden_channels // 4, out_channels)
 
     def forward(self, x_book):
         z = x_book
@@ -41,14 +41,12 @@ class Model(torch.nn.Module):
         # embedding matrices for users and books:
         self.user_emb = torch.nn.Embedding(data["user"].num_nodes, hidden_channels)
         self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
-        self.genre_emb = torch.nn.Embedding(data["genre"].num_nodes, hidden_channels)
         self.classifier = Classifier(hidden_channels, out_channels)
 
     def forward(self, data):
         x_dict = {
             "user": self.user_emb(data["user"].n_id),
             "book": self.book_emb(data["book"].n_id),
-            "genre": self.book_emb(data["genre"].n_id),
         }
         pred = self.classifier(x_dict["book"])
 
@@ -56,8 +54,6 @@ class Model(torch.nn.Module):
 
 
 if __name__ == '__main__':
-    Goodreads_dataset = Children(root='.')
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_type', '-dt', type=str, default='children',
                         help='goodreads dataset type for children, crime, history, mystery')
@@ -70,14 +66,16 @@ if __name__ == '__main__':
     Dataset = Children(root='.')
     data = Dataset[0]
 
+    print(data)
+
     num_reviews = data['user', 'review', 'book'].num_edges
 
     # load emb
     if args.emb_type == 'GPT-3.5-TURBO':
         encoded_text = np.load('children_dataset/emb/review.npy')
-        data['user', 'reviews', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
+        data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
     elif args.emb_type == 'None':
-        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 256).squeeze().float()
+        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
 
     data = T.ToUndirected()(data)  # To message passing
 
@@ -87,22 +85,25 @@ if __name__ == '__main__':
     train_loader = HGTLoader(
         data,
         num_samples={'user': [readers_samples], 'book': [books_samples]},
-        batch_size=batch_size,
         input_nodes=('book', data['book'].train_mask),
+        batch_size=1024,
+        shuffle=True
     )
 
     val_loader = HGTLoader(
         data,
         num_samples={'user': [readers_samples], 'book': [books_samples]},
-        batch_size=batch_size,
         input_nodes=('book', data['book'].val_mask),
+        batch_size=1024,
+        shuffle=False
     )
 
     test_loader = HGTLoader(
         data,
         num_samples={'user': [readers_samples], 'book': [books_samples]},
-        batch_size=batch_size,
         input_nodes=('book', data['book'].test_mask),
+        batch_size=1024,
+        shuffle=False
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -121,15 +122,7 @@ if __name__ == '__main__':
     criterion = torch.nn.BCELoss(weight=weight)
     criterion = criterion.to(device)
 
-    loss_list = []
-    acc_list = []
-    prc_list = []
-    mrr_list = []
-    ndcg_list = []
-    micro_f1_list = []
-    macro_f1_list = []
-
-    for epoch in range(10):
+    for epoch in range(1, 10):
         model.train()
         total_examples = total_loss = 0
 
@@ -168,5 +161,14 @@ if __name__ == '__main__':
                 f1 = f1_score(ground_truth, y_label, average='weighted')
                 print(f"F1 score: {f1:.4f}")
                 # AUC
-                auc = roc_auc_score(ground_truth, pred)
-                print(f"Validation AUC: {auc:.4f}")
+                micro_auc = roc_auc_score(ground_truth, pred, average='micro')
+                # macro_auc = roc_auc_score(ground_truth, pred, average='macro')
+                print(f"Validation micro AUC: {micro_auc:.4f}")
+                # print(f"Validation macro AUC: {macro_auc:.4f}")
+
+                # micro ACC
+                ground_truth_flat = ground_truth.ravel()
+                y_label_flat = y_label.ravel()
+                micro_accuracy = accuracy_score(ground_truth_flat, y_label_flat)
+                # acc = accuracy_score(ground_truth, y_label)
+                print(f"Validation micro ACC : {micro_accuracy:.4f}")
