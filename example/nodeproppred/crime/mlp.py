@@ -18,43 +18,8 @@ from torch.nn import Linear
 from sklearn.metrics import f1_score, accuracy_score
 import argparse
 
-from TAG.nodeproppred.children import Children
+from TAG.nodeproppred.crime import Crime
 
-
-class HeteroGNN(torch.nn.Module):
-    def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
-        super().__init__()
-
-        self.convs = torch.nn.ModuleList()
-
-        if model_type == 'GraphSAGE':
-            self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
-        elif model_type == 'GraphTransformer':
-            self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
-        elif model_type == 'GINE':
-            self.conv = GINEConv(Linear(hidden_channels, hidden_channels), train_eps=True, edge_dim=edge_dim)
-        elif model_type == 'EdgeConv':
-            self.conv = EdgeConvConv(Linear(2 * hidden_channels + edge_dim, hidden_channels), train_eps=True,
-                                     edge_dim=edge_dim)
-        elif model_type == 'GeneralConv':
-            self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
-        else:
-            raise NotImplementedError('Model type not implemented')
-
-        for _ in range(num_layers):
-            conv = HeteroConv({
-                edge_type: self.conv for edge_type in
-                data.edge_types
-            }, aggr='sum')
-
-            self.convs.append(conv)
-
-    def forward(self, x_dict, edge_index_dict, edge_attr_dict):
-        for i, conv in enumerate(self.convs):
-            x_dict = conv(x_dict, edge_index_dict, edge_attr_dict=edge_attr_dict)
-            x_dict = {key: x.relu() for key, x in x_dict.items()} if i != len(
-                self.convs) - 1 else x_dict
-        return x_dict
 
 
 class Classifier(torch.nn.Module):
@@ -77,7 +42,6 @@ class Model(torch.nn.Module):
         # embedding matrices for users and books:
         self.user_emb = torch.nn.Embedding(data["user"].num_nodes, hidden_channels)
         self.book_emb = torch.nn.Embedding(data["book"].num_nodes, hidden_channels)
-        self.heteroGNN = HeteroGNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
         self.classifier = Classifier(hidden_channels, out_channels)
 
     def forward(self, data):
@@ -85,7 +49,6 @@ class Model(torch.nn.Module):
             "user": self.user_emb(data["user"].n_id),
             "book": self.book_emb(data["book"].n_id),
         }
-        x_dict = self.heteroGNN(x_dict, data.edge_index_dict, edge_attr_dict=data.edge_attr_dict)
         pred = self.classifier(x_dict["book"])
 
         return pred, x_dict
@@ -101,21 +64,20 @@ if __name__ == '__main__':
                         help='Model type for HeteroGNN, options are GraphTransformer, GINE, Spline')
     args = parser.parse_args()
 
-    Dataset = Children(root='.')
+    Dataset = Crime(root='.')
     data = Dataset[0]
     
-    print(data)
-    
-
     num_reviews = data['user', 'review', 'book'].num_edges
 
     # load emb
     if args.emb_type == 'GPT-3.5-TURBO':
-        encoded_text = np.load('children_dataset/emb/review.npy')
+        encoded_text = np.load('crime_dataset/emb/review.npy')
         data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
     elif args.emb_type == 'None':
         data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
-
+     
+    print(data)
+    
     data = T.ToUndirected()(data)  # To message passing
 
     # dataloader
@@ -148,7 +110,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
 
-    model = Model(hidden_channels=256, out_channels=data.num_classes, edge_dim=3072, num_layers=2,
+    model = Model(hidden_channels=256, out_channels=data.num_classes, edge_dim=256, num_layers=2,
                   model_type=args.model_type)
     model = model.to(device)
 
@@ -170,7 +132,6 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             batch = batch.to(device)
             batch_size = batch['book'].batch_size
-            print(batch)
 
             out, x_dict = model(batch)
             

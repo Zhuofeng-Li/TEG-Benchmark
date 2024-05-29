@@ -18,7 +18,7 @@ from torch.nn import Linear
 from sklearn.metrics import f1_score, accuracy_score
 import argparse
 
-from TAG.nodeproppred.children import Children
+from TAG.nodeproppred.crime import Crime
 
 
 class HeteroGNN(torch.nn.Module):
@@ -101,21 +101,20 @@ if __name__ == '__main__':
                         help='Model type for HeteroGNN, options are GraphTransformer, GINE, Spline')
     args = parser.parse_args()
 
-    Dataset = Children(root='.')
+    Dataset = Crime(root='.')
     data = Dataset[0]
     
-    print(data)
-    
-
     num_reviews = data['user', 'review', 'book'].num_edges
 
     # load emb
     if args.emb_type == 'GPT-3.5-TURBO':
-        encoded_text = np.load('children_dataset/emb/review.npy')
+        encoded_text = np.load('crime_dataset/emb/review.npy')
         data['user', 'review', 'book'].edge_attr = torch.tensor(encoded_text).squeeze().float()
     elif args.emb_type == 'None':
-        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
-
+        data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 256).squeeze().float()
+     
+    print(data)
+    
     data = T.ToUndirected()(data)  # To message passing
 
     # dataloader
@@ -148,7 +147,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
 
-    model = Model(hidden_channels=256, out_channels=data.num_classes, edge_dim=3072, num_layers=2,
+    model = Model(hidden_channels=256, out_channels=data.num_classes, edge_dim=256, num_layers=2,
                   model_type=args.model_type)
     model = model.to(device)
 
@@ -170,7 +169,6 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             batch = batch.to(device)
             batch_size = batch['book'].batch_size
-            print(batch)
 
             out, x_dict = model(batch)
             
