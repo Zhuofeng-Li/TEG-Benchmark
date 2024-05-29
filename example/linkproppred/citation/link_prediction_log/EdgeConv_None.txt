@@ -1,0 +1,39 @@
+Loading no text
+Data(edge_index=[2, 5970965], edge_attr=[5970965, 1024], x=[4972456, 1024])
+cuda
+Epoch: 001, Loss: 0.6492
+Validation begins
+F1 score: 0.6604
+Validation AUC: 0.7224
+Epoch: 002, Loss: 0.6438
+Validation begins
+F1 score: 0.6662
+Validation AUC: 0.7375
+Epoch: 003, Loss: 0.6396
+Validation begins
+F1 score: 0.6515
+Validation AUC: 0.7394
+Epoch: 004, Loss: 0.6341
+Validation begins
+F1 score: 0.6470
+Validation AUC: 0.7304
+Epoch: 005, Loss: 0.6255
+Validation begins
+F1 score: 0.6440
+Validation AUC: 0.7259
+Epoch: 006, Loss: 0.6133
+Validation begins
+F1 score: 0.6342
+Validation AUC: 0.7139
+Epoch: 007, Loss: 0.6000
+Validation begins
+F1 score: 0.6364
+Validation AUC: 0.7208
+Epoch: 008, Loss: 0.5876
+Validation begins
+F1 score: 0.6321
+Validation AUC: 0.7074
+Epoch: 009, Loss: 0.5776
+Validation begins
+F1 score: 0.6420
+Validation AUC: 0.7124

@@ -1,0 +1,3 @@
+Loading angle embeddings
+Data(edge_index=[2, 5970965], edge_attr=[5970965, 1024], x=[4972456, 1024])
+cuda
