@@ -14,6 +14,7 @@ from torch_geometric import seed_everything
 from torch_geometric.loader import LinkNeighborLoader
 from torch_geometric.nn import SAGEConv, TransformerConv, GINEConv, GeneralConv, EdgeConv
 from torch.nn import Linear
+from models import SAGEEdgeConv, EdgeConvConv, MLP
 import argparse
 
 class GNN(torch.nn.Module):
@@ -23,15 +24,16 @@ class GNN(torch.nn.Module):
 		self.convs = torch.nn.ModuleList()
 
 		if model_type == 'GraphSAGE':
-			self.conv = SAGEConv(hidden_channels, hidden_channels)
+			self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
 		elif model_type == 'GraphTransformer':
-			self.conv = TransformerConv(hidden_channels, hidden_channels)
+			self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
 		elif model_type == 'GINE':
-			self.conv = GINEConv(Linear(hidden_channels, hidden_channels))
+			self.conv = GINEConv(Linear(hidden_channels, hidden_channels), edge_dim=edge_dim)
 		elif model_type == 'EdgeConv':
-			self.conv = EdgeConv(Linear(2 * hidden_channels, hidden_channels))
+			self.conv = EdgeConvConv(Linear(2 * hidden_channels + edge_dim, hidden_channels), train_eps=True,
+                                     edge_dim=edge_dim)
 		elif model_type == 'GeneralConv':
-			self.conv = GeneralConv(hidden_channels, hidden_channels)
+			self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
 		else:
 			raise NotImplementedError('Model type not implemented')
 
@@ -40,7 +42,7 @@ class GNN(torch.nn.Module):
 
 	def forward(self, x, edge_index, edge_attr):
 		for i, conv in enumerate(self.convs):
-			x = conv(x, edge_index)
+			x = conv(x, edge_index, edge_attr)
 			x = x.relu() if i != len(self.convs) - 1 else x
 		return x
 

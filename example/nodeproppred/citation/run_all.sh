@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Define the models and embedding types
-models=("MLP" "GraphTransformer" "GINE" "EdgeConv" "GraphSAGE" "GeneralConv")
-embedding_types=("Angle" "None")
+# models=("MLP" "GraphTransformer" "GINE" "EdgeConv" "GraphSAGE" "GeneralConv")
+# embedding_types=("Angle" "None")
+
+models=("EdgeConv" "GraphSAGE")
+embedding_types=("Angle")
 
 # Loop through models and embedding types
 for model in "${models[@]}"; do

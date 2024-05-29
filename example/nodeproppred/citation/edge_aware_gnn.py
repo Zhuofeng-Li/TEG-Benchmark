@@ -4,6 +4,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
+from models import SAGEEdgeConv, EdgeConvConv, MLP
 import torch.nn.functional as F
 import numpy as np
 import torch
@@ -22,13 +23,14 @@ class GNN(torch.nn.Module):
 		self.convs = torch.nn.ModuleList()
 
 		if model_type == 'GraphSAGE':
-			self.conv = SAGEConv((-1, -1), hidden_channels)
+			self.conv = SAGEEdgeConv(hidden_channels, hidden_channels, edge_dim=edge_dim)
 		elif model_type == 'GraphTransformer':
 			self.conv = TransformerConv((-1, -1), hidden_channels, edge_dim=edge_dim)
 		elif model_type == 'GINE':
 			self.conv = GINEConv(Linear(hidden_channels, hidden_channels), edge_dim=edge_dim)
 		elif model_type == 'EdgeConv':
-			self.conv = EdgeConv(Linear(2 * hidden_channels + edge_dim, hidden_channels))
+			self.conv = EdgeConvConv(Linear(2 * hidden_channels + edge_dim, hidden_channels), train_eps=True,
+                                     edge_dim=edge_dim)
 		elif model_type == 'GeneralConv':
 			self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
 		else:
@@ -122,7 +124,7 @@ if __name__ == '__main__':
 		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
 	elif args.emb_type == 'None':
 		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
-		data.x = torch.tensor(num_nodes, 1024).squeeze().float()
+		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
 	else:
 		raise NotImplementedError('Embedding not implemented')
 

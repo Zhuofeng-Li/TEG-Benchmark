@@ -25,7 +25,7 @@ if __name__ == "__main__":
 				lines = file.readlines()
 				# 查找文件中的最大 AUC 和 F1
 				for line in lines:
-					if "AUC" in line:
+					if "Validation AUC:" in line:
 						auc = float(line.split(":")[-1].strip())
 						max_auc = max(max_auc, auc)
 					elif "F1 score" in line:

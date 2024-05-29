@@ -92,7 +92,7 @@ if __name__ == '__main__':
 		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
 	elif args.emb_type == 'None':
 		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
-		data.x = torch.tensor(num_nodes, 1024).squeeze().float()
+		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
 	
 	train_loader = NeighborLoader(data, input_nodes=data.train_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=True)
 	val_loader = NeighborLoader(data, input_nodes=data.val_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)

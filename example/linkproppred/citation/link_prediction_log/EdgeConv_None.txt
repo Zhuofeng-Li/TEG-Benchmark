@@ -3,37 +3,37 @@ Data(edge_index=[2, 5970965], edge_attr=[5970965, 1024], x=[4972456, 1024])
 cuda
 Epoch: 001, Loss: 0.6492
 Validation begins
-F1 score: 0.6604
-Validation AUC: 0.7224
-Epoch: 002, Loss: 0.6438
+F1 score: 0.6595
+Validation AUC: 0.7215
+Epoch: 002, Loss: 0.6439
 Validation begins
-F1 score: 0.6662
-Validation AUC: 0.7375
+F1 score: 0.6649
+Validation AUC: 0.7365
 Epoch: 003, Loss: 0.6396
 Validation begins
-F1 score: 0.6515
-Validation AUC: 0.7394
-Epoch: 004, Loss: 0.6341
+F1 score: 0.6530
+Validation AUC: 0.7393
+Epoch: 004, Loss: 0.6343
 Validation begins
-F1 score: 0.6470
-Validation AUC: 0.7304
-Epoch: 005, Loss: 0.6255
+F1 score: 0.6415
+Validation AUC: 0.7347
+Epoch: 005, Loss: 0.6259
 Validation begins
 F1 score: 0.6440
-Validation AUC: 0.7259
-Epoch: 006, Loss: 0.6133
+Validation AUC: 0.7258
+Epoch: 006, Loss: 0.6140
 Validation begins
-F1 score: 0.6342
-Validation AUC: 0.7139
-Epoch: 007, Loss: 0.6000
+F1 score: 0.6429
+Validation AUC: 0.7170
+Epoch: 007, Loss: 0.6003
+Validation begins
+F1 score: 0.6385
+Validation AUC: 0.7155
+Epoch: 008, Loss: 0.5882
 Validation begins
 F1 score: 0.6364
-Validation AUC: 0.7208
-Epoch: 008, Loss: 0.5876
+Validation AUC: 0.7101
+Epoch: 009, Loss: 0.5784
 Validation begins
-F1 score: 0.6321
-Validation AUC: 0.7074
-Epoch: 009, Loss: 0.5776
-Validation begins
-F1 score: 0.6420
-Validation AUC: 0.7124
+F1 score: 0.6336
+Validation AUC: 0.7007
