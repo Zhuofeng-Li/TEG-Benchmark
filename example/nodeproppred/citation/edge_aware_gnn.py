@@ -4,9 +4,11 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
+import torch.nn.functional as F
 import numpy as np
 import torch
 import torch_geometric.transforms as T
+from torch_geometric.loader import NeighborLoader
 import tqdm
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
 from torch_geometric.loader import NeighborSampler
@@ -51,22 +53,20 @@ class Classifier(torch.nn.Module):
 	def forward(self, x):
 		x = self.lin1(x).relu()
 		x = self.lin2(x)
-		return torch.sigmoid(x)
+		return x
 
 
 class Model(torch.nn.Module):
 	def __init__(self, hidden_channels, out_channels, edge_dim, num_layers, model_type):
 		super().__init__()
-		self.embedding = torch.nn.Embedding(data.num_nodes, hidden_channels)
 		self.gnn = GNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
 		self.classifier = Classifier(hidden_channels, out_channels)
 
 	def forward(self, data):
-		x = self.embedding(data.x)
+		x = data.x
 		x = self.gnn(x, data.edge_index, data.edge_attr)
 		pred = self.classifier(x)
 		return pred
-
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -76,17 +76,41 @@ if __name__ == '__main__':
 						help='embedding type for GNN, options are GPT-3.5-TURBO, Bert, Angle, None')
 	parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer',
 						help='Model type for GNN, options are GraphTransformer, GINE, Spline')
-	args = parser.parse_args()
+	args = parser.parse_args()  
 
 	# Dataset = Children(root='.') 
 	# data = Dataset[0]   # TODO: Citation code in TAG
 	with open('citation_dataset/raw/filtered_citation_network.pkl', 'rb') as f:
 		data = pickle.load(f)
 
-	print(data)
 
 	num_nodes = len(data.text_nodes)
 	num_edges = len(data.text_edges)
+
+	# map node labels 
+	label_to_int = {label: i for i, label in enumerate(set(data.text_node_labels))}
+	data.y = torch.tensor([label_to_int[label] for label in data.text_node_labels]).long()
+ 
+	# data split
+	train_ratio = 0.8
+	val_ratio = 0.1
+
+	num_train_paper = int(num_nodes * train_ratio)
+	num_val_paper = int(num_nodes * val_ratio)
+	num_test_paper = num_nodes - num_train_paper - num_val_paper
+			
+	paper_indices = torch.randperm(num_nodes)
+
+	data.train_mask = torch.zeros(num_nodes, dtype=torch.bool)
+	data.val_mask = torch.zeros(num_nodes, dtype=torch.bool)
+	data.test_mask = torch.zeros(num_nodes, dtype=torch.bool)
+
+	data.train_mask[paper_indices[:num_val_paper]] = 1
+	data.val_mask[paper_indices[num_val_paper:num_val_paper + num_val_paper ]] = 1
+	data.test_mask[paper_indices[-num_test_paper:]] = 1
+
+	data.num_classes = max(data.y) + 1
+	data.num_nodes = num_nodes
  
 	del data.text_nodes
 	del data.text_node_labels
@@ -99,36 +123,34 @@ if __name__ == '__main__':
 	elif args.emb_type == 'None':
 		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
 		data.x = torch.tensor(num_nodes, 1024).squeeze().float()
+	else:
+		raise NotImplementedError('Embedding not implemented')
 
-
-	train_loader = NeighborSampler(data.edge_index, node_idx=data.train_mask, sizes=[10, 10], batch_size=1024, shuffle=True, edge_attr=data.edge_attr)
-	val_loader = NeighborSampler(data.edge_index, node_idx=data.val_mask, sizes=[10, 10], batch_size=1024, shuffle=False, edge_attr=data.edge_attr)
-	test_loader = NeighborSampler(data.edge_index, node_idx=data.test_mask, sizes=[10, 10], batch_size=1024, shuffle=False, edge_attr=data.edge_attr)
-
+	train_loader = NeighborLoader(data, input_nodes=data.train_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=True)
+	val_loader = NeighborLoader(data, input_nodes=data.val_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)
+	test_loader = NeighborLoader(data, input_nodes=data.test_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)
+ 
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	print(device)
 
-	model = Model(hidden_channels=256, out_channels=data.num_classes, edge_dim=3072, num_layers=2, model_type=args.model_type)
+	model = Model(hidden_channels=1024, out_channels=data.num_classes, edge_dim=1024, num_layers=2, model_type=args.model_type)
 	model = model.to(device)
 
 	optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-	weight = data.y.sum(0)
-	weight = weight.max() / weight
-
-	criterion = torch.nn.BCELoss(weight=weight)
-	criterion = criterion.to(device)
+	criterion = torch.nn.CrossEntropyLoss()
 
 	for epoch in range(1, 10):
 		model.train()
 		total_examples = total_loss = 0
 
-		for batch_size, n_id, adjs in tqdm.tqdm(train_loader):
+		for batch in tqdm.tqdm(train_loader):
 			optimizer.zero_grad()
-			adjs = [adj.to(device) for adj in adjs]
-
-			out = model(adjs[0])
-			loss = criterion(out, data.y[n_id[:batch_size]].float())
+			batch = batch.to(device)
+			batch_size = batch.batch_size
+			
+			out = model(batch)
+			loss = criterion(out, batch.y)
 			loss.backward()
 			optimizer.step()
 
@@ -142,23 +164,23 @@ if __name__ == '__main__':
 			with torch.no_grad():
 				preds = []
 				ground_truths = []
-				for batch_size, n_id, adjs in tqdm.tqdm(val_loader):
-					adjs = [adj.to(device) for adj in adjs]
-
-					pred = model(adjs[0])
+				for batch in tqdm.tqdm(val_loader):
+					batch = batch.to(device)
+					
+					out = model(batch)
+					pred = F.softmax(out, dim=1) 
+					
 					preds.append(pred)
-					ground_truths.append(data.y[n_id[:batch_size]].float())
-
+					ground_truths.append(batch.y)
+				
 				pred = torch.cat(preds, dim=0).cpu().numpy()
 				ground_truth = torch.cat(ground_truths, dim=0).cpu().numpy()
-				y_label = np.where(pred >= 0.5, 1, 0)
-				f1 = f1_score(ground_truth, y_label, average='weighted')
+				
+				# F1 Score
+				y_pred_labels = np.argmax(pred, axis=1)  # 获得预测类别
+				f1 = f1_score(ground_truth, y_pred_labels, average='weighted')
 				print(f"F1 score: {f1:.4f}")
-
-				micro_auc = roc_auc_score(ground_truth, pred, average='micro')
-				print(f"Validation micro AUC: {micro_auc:.4f}")
-
-				ground_truth_flat = ground_truth.ravel()
-				y_label_flat = y_label.ravel()
-				micro_accuracy = accuracy_score(ground_truth_flat, y_label_flat)
-				print(f"Validation micro ACC : {micro_accuracy:.4f}")
+				
+				# ACC
+				accuracy = accuracy_score(ground_truth, y_pred_labels)
+				print(f"Validation Accuracy: {accuracy:.4f}")

@@ -190,7 +190,6 @@ if __name__ == '__main__':
                 preds = []
                 ground_truths = []
                 for sampled_data in tqdm.tqdm(test_loader):
-                    with torch.no_grad():
                         sampled_data = sampled_data.to(device)
                         pred = model(sampled_data)[0]
                         preds.append(pred)

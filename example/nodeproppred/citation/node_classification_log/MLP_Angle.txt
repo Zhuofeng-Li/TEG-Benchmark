@@ -1,0 +1,28 @@
+cuda
+Validation begins
+F1 score: 0.7859
+Validation Accuracy: 0.7868
+Validation begins
+F1 score: 0.7913
+Validation Accuracy: 0.7928
+Validation begins
+F1 score: 0.7954
+Validation Accuracy: 0.7969
+Validation begins
+F1 score: 0.7974
+Validation Accuracy: 0.7992
+Validation begins
+F1 score: 0.7993
+Validation Accuracy: 0.8003
+Validation begins
+F1 score: 0.8002
+Validation Accuracy: 0.8021
+Validation begins
+F1 score: 0.8023
+Validation Accuracy: 0.8039
+Validation begins
+F1 score: 0.8015
+Validation Accuracy: 0.8029
+Validation begins
+F1 score: 0.8032
+Validation Accuracy: 0.8044
