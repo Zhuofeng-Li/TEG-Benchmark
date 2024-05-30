@@ -1,0 +1,59 @@
+HeteroData(
+  num_classes=10,
+  user={ x=[203655, 64] },
+  book={
+    x=[218987, 64],
+    y=[218987, 10],
+    train_mask=[218987],
+    val_mask=[218987],
+    test_mask=[218987],
+  },
+  (user, review, book)={
+    edge_index=[2, 1849236],
+    edge_label=[1849236],
+    edge_attr=[1849236, 768],
+  },
+  (book, rev_review, user)={
+    edge_index=[2, 1849236],
+    edge_label=[1849236],
+    edge_attr=[1849236, 768],
+  }
+)
+cuda
+Model type: GeneralConv
+Validation begins
+F1 score: 0.6722
+Validation micro AUC: 0.9277
+Validation micro ACC : 0.8996
+Validation begins
+F1 score: 0.7149
+Validation micro AUC: 0.9390
+Validation micro ACC : 0.9027
+Validation begins
+F1 score: 0.7152
+Validation micro AUC: 0.9418
+Validation micro ACC : 0.9044
+Validation begins
+F1 score: 0.7402
+Validation micro AUC: 0.9385
+Validation micro ACC : 0.9006
+Validation begins
+F1 score: 0.7659
+Validation micro AUC: 0.9416
+Validation micro ACC : 0.9020
+Validation begins
+F1 score: 0.7590
+Validation micro AUC: 0.9441
+Validation micro ACC : 0.9071
+Validation begins
+F1 score: 0.7681
+Validation micro AUC: 0.9456
+Validation micro ACC : 0.9094
+Validation begins
+F1 score: 0.7693
+Validation micro AUC: 0.9436
+Validation micro ACC : 0.9080
+Validation begins
+F1 score: 0.7888
+Validation micro AUC: 0.9409
+Validation micro ACC : 0.8966

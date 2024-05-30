@@ -159,3 +159,5 @@ example/linkproppred/*/*_dataset/
 example/nodeproppred/*/*_dataset/
 todo.txt
 TAG_Benchmark/example/nodeproppred/citation/node_classification_log/tmp.ipynb
+example/linkproppred/*/*/*_dataset/
+example/nodeproppred/*/*/*_dataset/

@@ -1,0 +1,1 @@
+from .comics_graphic import Comics

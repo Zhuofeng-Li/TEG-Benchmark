@@ -1,0 +1,58 @@
+HeteroData(
+  user={ x=[92667, 64] },
+  book={ x=[123946, 64] },
+  genre={ x=[11, 64] },
+  (user, review, book)={
+    edge_index=[2, 504585],
+    edge_attr=[504585, 768],
+  },
+  (book, description, genre)={
+    edge_index=[2, 123946],
+    edge_attr=[123946, 768],
+  },
+  (book, rev_review, user)={
+    edge_index=[2, 504585],
+    edge_attr=[504585, 768],
+  },
+  (genre, rev_description, book)={
+    edge_index=[2, 123946],
+    edge_attr=[123946, 768],
+  }
+)
+cuda
+Epoch: 001, Loss: 0.3481
+Validation begins
+F1 score: 0.8736
+Validation AUC: 0.9472
+Epoch: 002, Loss: 0.2511
+Validation begins
+F1 score: 0.8848
+Validation AUC: 0.9503
+Epoch: 003, Loss: 0.2125
+Validation begins
+F1 score: 0.8782
+Validation AUC: 0.9460
+Epoch: 004, Loss: 0.1760
+Validation begins
+F1 score: 0.8777
+Validation AUC: 0.9443
+Epoch: 005, Loss: 0.1348
+Validation begins
+F1 score: 0.8653
+Validation AUC: 0.9368
+Epoch: 006, Loss: 0.0990
+Validation begins
+F1 score: 0.8592
+Validation AUC: 0.9338
+Epoch: 007, Loss: 0.0681
+Validation begins
+F1 score: 0.8594
+Validation AUC: 0.9290
+Epoch: 008, Loss: 0.0516
+Validation begins
+F1 score: 0.8496
+Validation AUC: 0.9221
+Epoch: 009, Loss: 0.0395
+Validation begins
+F1 score: 0.8465
+Validation AUC: 0.9250
