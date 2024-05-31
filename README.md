@@ -32,7 +32,7 @@ TAG-Benchmark is an on-going effort, and we are planning to increase our coverag
 
 You can quickly install the corresponding dependencies,
 
-```shell
+```bash
 conda env create -f environment.yml
 ```
 
@@ -46,7 +46,7 @@ Below we will take the `children` dataset in the `goodreads` folder as an exampl
 
 You can go to the [TAG-Benchmark]() (TODO) to find the datasets we upload! In each dataset folder, you can find the `.json` file (the text attribute of the dataset) in `raw` folder, `.npy` file (text embedding we extract from the PLM) in `emb` folder. Please copy thses files directly in `goodreads/children` folder!
 
-```shell
+```bash
 cd example/linkproppred/goodreads/children
 
 cd raw
@@ -60,7 +60,7 @@ cd emb
 
 #### GNN for link prediction
 
-```shell
+```bash
 cd example/linkproppred/goodreads
 
 # Run the edge_aware_gnn.py script
@@ -74,7 +74,7 @@ python edge_aware_gnn.py --data_type children --emb_type Bert --model_type Graph
 
 Copy the children dataset and embeddings into the `example/nodeproppred/goodreads/children` directory, as we did before (the same dataset and embeddings used for link prediction are also used for node classification).
 
-```shell
+```bash
 cd example/nodeproppred/goodreads
 
 # Run the edge_aware_gnn.py script
@@ -86,7 +86,7 @@ python edge_aware_gnn.py --data_type children --emb_type Bert --model_type Graph
 
 Here are explanations of some important args,
 
-```shell
+```bash
 --data_type: "the name of dataset"
 --emb_type: "embedding type"
 --model_type: "model type"
