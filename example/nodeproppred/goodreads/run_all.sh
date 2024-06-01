@@ -7,8 +7,8 @@
 
 # Define the models, embedding types, and data types
 models=("MLP" "GraphTransformer" "GINE" "EdgeConv" "GraphSAGE" "GeneralConv")
-embedding_types=("Bert")
-data_types=("comics_graphic")  # Add more data types if needed
+embedding_types=("Large_Bert")
+data_types=("mystery_thriller_crime")  # Add more data types if needed
 
 
 # Loop through models, embedding types, and data types
@@ -20,6 +20,6 @@ for model in "${models[@]}"; do
     done
 done
 
-python ../../../utils/find_max_node.py -fp comics_graphic/node_classification_log -fs Bert
-python ../../../utils/find_max_node.py -fp comics_graphic/node_classification_log -fs GPT-3.5
-python ../../../utils/find_max_node.py -fp mystery_thriller_crime/node_classification_log -fs Bert
+python ../../../utils/find_max_node.py -fp mystery_thriller_crime/node_classification_log -fs Large_Bert
+# python ../../../utils/find_max_node.py -fp comics_graphic/node_classification_log -fs GPT-3.5
+# python ../../../utils/find_max_node.py -fp mystery_thriller_crime/node_classification_log -fs Bert

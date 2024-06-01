@@ -6,8 +6,8 @@
 # data_types=("children" "mystery_thriller_crime" "comics_graphic")  # Add more data types if needed
 
 # Define the models, embedding types, and data types
-models=("GeneralConv")
-embedding_types=("Bert")
+models=("MLP" "GraphTransformer" "GINE" "EdgeConv" "GraphSAGE" "GeneralConv")
+embedding_types=("Large_Bert")
 data_types=("mystery_thriller_crime")  # Add more data types if needed
 
 
@@ -20,6 +20,6 @@ for model in "${models[@]}"; do
     done
 done
 
-# python ../../../utils/find_max_link.py -fp children/link_prediction_log -fs Bert 
+python ../../../utils/find_max_link.py -fp mystery_thriller_crime/link_prediction_log -fs Large_Bert 
 # python ../../../utils/find_max_link.py -fp mystery_thriller_crime/link_prediction_log -fs Bert 
 # python ../../../utils/find_max_link.py -fp comics_graphic/link_prediction_log -fs Bert 

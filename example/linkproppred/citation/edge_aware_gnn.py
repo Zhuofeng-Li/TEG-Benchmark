@@ -31,7 +31,7 @@ class GNN(torch.nn.Module):
 			self.conv = GINEConv(Linear(hidden_channels, hidden_channels), edge_dim=edge_dim)
 		elif model_type == 'EdgeConv':
 			self.conv = EdgeConvConv(Linear(2 * hidden_channels + edge_dim, hidden_channels), train_eps=True,
-                                     edge_dim=edge_dim)
+									 edge_dim=edge_dim)
 		elif model_type == 'GeneralConv':
 			self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
 		else:
@@ -65,29 +65,33 @@ class Classifier(torch.nn.Module):
 class Model(torch.nn.Module):
 	def __init__(self, hidden_channels, edge_dim, num_layers, model_type):
 		super().__init__()
-		self.gnn = GNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
+		self.model_type = model_type
+		if model_type != 'MLP':
+			self.gnn = GNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
+		
 		self.classifier = Classifier(hidden_channels)
 
 	def forward(self, data):
-		x = self.gnn(data.x, data.edge_index, data.edge_attr)
+		x = data.x
+		if self.model_type != 'MLP':
+			x = self.gnn(x, data.edge_index, data.edge_attr)
+			
 		pred = self.classifier(x, data.edge_label_index)
 		return pred, x
-
-
 
 
 if __name__ == "__main__":
 	seed_everything(66)
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--data_type', '-dt', type=str, default='children', help='Data type')
+	parser.add_argument('--data_type', '-dt', type=str, default='citation', help='Data type')
 	parser.add_argument('--emb_type', '-et', type=str, default='Angle', help='Embedding type')  # TODO: set edge dim
 	parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer', help='Model type')
 	args = parser.parse_args()
 
 	# Dataset = Children(root='.') 
 	# data = Dataset[0]   # TODO: Citation code in TAG
-	with open('citation_dataset/raw/filtered_citation_network.pkl', 'rb') as f:
+	with open(f'citation_dataset/raw/{args.data_type}.pkl', 'rb') as f:
 		data = pickle.load(f)
 	
 	num_nodes = len(data.text_nodes)
@@ -97,18 +101,26 @@ if __name__ == "__main__":
 	del data.text_node_labels
 	del data.text_edges
 
-	
-	# load emb
-	if args.emb_type == 'Angle':  # TODO: reset emb name
-		print('Loading angle embeddings')
-		data.edge_attr = torch.load('citation_dataset/emb/angle-edge.pt').squeeze().float()
-		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
-	elif args.emb_type == 'None':
-		print('Loading no text')
-		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
-		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
+	# set hidden channels and edge dim for diff emb type 
+	if args.emb_type != 'None':
+		data.x = torch.load(f'citation_dataset/emb/{args.data_type}_{args.emb_type}_node.pt').squeeze().float()
+		data.edge_attr = torch.load(f'citation_dataset/emb/{args.data_type}_{args.emb_type}_edge.pt').squeeze().float()
+		if args.emb_type == 'GPT-3.5-TURBO':
+			edge_dim = 1536
+			node_dim = 1536
+		elif args.emb_type == 'Large_Bert':
+			edge_dim = 1024
+			node_dim = 1024
+		elif args.emb_type == 'Angle':
+			edge_dim = 1024
+			node_dim = 1024
+		else:
+			raise NotImplementedError('Embedding type not implemented')
 	else:
-		raise NotImplementedError('Embedding type not implemented')
+		data.x = torch.load(f'citation_dataset/emb/citation_Large_Bert_node.pt').squeeze().float()
+		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
+		edge_dim = 1024
+		node_dim = 1024
 
 	print(data)
   
@@ -153,7 +165,7 @@ if __name__ == "__main__":
 		shuffle=False,
 	)
 	
-	model = Model(hidden_channels=1024, edge_dim=1024, num_layers=2, model_type=args.model_type)  # TODO: edge dim
+	model = Model(hidden_channels=node_dim, edge_dim=edge_dim, num_layers=2, model_type=args.model_type)  # TODO: edge dim
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	print(device)
 

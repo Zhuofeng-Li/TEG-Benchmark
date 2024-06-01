@@ -1,0 +1,38 @@
+Data(edge_index=[2, 1632754], x=[2123626, 1024], edge_attr=[1632754, 1024])
+cuda
+Epoch: 001, Loss: 0.5274
+Validation begins
+F1 score: 0.8091
+Validation AUC: 0.8619
+Epoch: 002, Loss: 0.3735
+Validation begins
+F1 score: 0.8486
+Validation AUC: 0.9147
+Epoch: 003, Loss: 0.3191
+Validation begins
+F1 score: 0.8281
+Validation AUC: 0.9345
+Epoch: 004, Loss: 0.2913
+Validation begins
+F1 score: 0.8832
+Validation AUC: 0.9457
+Epoch: 005, Loss: 0.2688
+Validation begins
+F1 score: 0.8668
+Validation AUC: 0.9388
+Epoch: 006, Loss: 0.2487
+Validation begins
+F1 score: 0.8735
+Validation AUC: 0.9314
+Epoch: 007, Loss: 0.2296
+Validation begins
+F1 score: 0.8769
+Validation AUC: 0.9382
+Epoch: 008, Loss: 0.2177
+Validation begins
+F1 score: 0.8742
+Validation AUC: 0.9415
+Epoch: 009, Loss: 0.2030
+Validation begins
+F1 score: 0.8690
+Validation AUC: 0.9275

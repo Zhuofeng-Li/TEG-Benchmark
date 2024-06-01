@@ -120,21 +120,23 @@ if __name__ == '__main__':
 	
 	num_reviews = data['user', 'review', 'book'].num_edges
 
-	# load emb
-	if args.emb_type == 'GPT-3.5-TURBO':
-		npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/review.npy')
+	# load emb 
+	if args.emb_type != 'None':
+		npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_reviews_{args.emb_type}.npy')
 		data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-		edge_dim = 3072
-	elif args.emb_type == 'Bert':
-		npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_reviews_bert.npy')
-		data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()	
-		edge_dim = 768
-	elif args.emb_type == 'None':
+		del npdata
+		if args.emb_type == 'GPT-3.5-TURBO':
+			edge_dim = 3072
+		elif args.emb_type == 'Bert':
+			edge_dim = 768
+		elif args.emb_type == 'Large_Bert':
+			edge_dim = 1024
+		else:
+			raise NotImplementedError('Embedding type not implemented')
+	else:
 		data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
 		edge_dim = 3072
-	else:
-		raise NotImplementedError('Embedding type not implemented')
-
+		
 	data = T.ToUndirected()(data)  # To message passing
 	
 	print(data)

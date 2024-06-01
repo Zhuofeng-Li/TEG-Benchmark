@@ -1,39 +1,38 @@
-Loading no text
-Data(edge_index=[2, 5970965], edge_attr=[5970965, 1024], x=[4972456, 1024])
+Data(edge_index=[2, 1632754], x=[2123626, 1024], edge_attr=[1632754, 1024])
 cuda
-Epoch: 001, Loss: 0.3522
+Epoch: 001, Loss: 0.5278
 Validation begins
-F1 score: 0.9056
-Validation AUC: 0.9620
-Epoch: 002, Loss: 0.2243
+F1 score: 0.8171
+Validation AUC: 0.8931
+Epoch: 002, Loss: 0.3511
 Validation begins
-F1 score: 0.9183
-Validation AUC: 0.9697
-Epoch: 003, Loss: 0.1856
+F1 score: 0.8303
+Validation AUC: 0.9172
+Epoch: 003, Loss: 0.3012
 Validation begins
-F1 score: 0.9258
-Validation AUC: 0.9750
-Epoch: 004, Loss: 0.1701
+F1 score: 0.8441
+Validation AUC: 0.9021
+Epoch: 004, Loss: 0.2709
 Validation begins
-F1 score: 0.9266
-Validation AUC: 0.9753
-Epoch: 005, Loss: 0.1578
+F1 score: 0.8345
+Validation AUC: 0.8968
+Epoch: 005, Loss: 0.2564
 Validation begins
-F1 score: 0.9286
-Validation AUC: 0.9772
-Epoch: 006, Loss: 0.1463
+F1 score: 0.8379
+Validation AUC: 0.8869
+Epoch: 006, Loss: 0.2439
 Validation begins
-F1 score: 0.9292
-Validation AUC: 0.9770
-Epoch: 007, Loss: 0.1354
+F1 score: 0.8317
+Validation AUC: 0.8858
+Epoch: 007, Loss: 0.2303
 Validation begins
-F1 score: 0.9293
-Validation AUC: 0.9771
-Epoch: 008, Loss: 0.1252
+F1 score: 0.8270
+Validation AUC: 0.8948
+Epoch: 008, Loss: 0.2148
 Validation begins
-F1 score: 0.9268
-Validation AUC: 0.9760
-Epoch: 009, Loss: 0.1156
+F1 score: 0.8345
+Validation AUC: 0.8763
+Epoch: 009, Loss: 0.2024
 Validation begins
-F1 score: 0.9241
-Validation AUC: 0.9746
+F1 score: 0.8149
+Validation AUC: 0.8826

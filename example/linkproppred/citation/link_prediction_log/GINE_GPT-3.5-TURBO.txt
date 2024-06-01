@@ -1,0 +1,4 @@
+Data(edge_index=[2, 1632754], x=[2123626, 1536], edge_attr=[1632754, 1536])
+cuda
+Epoch: 001, Loss: 0.5266
+Validation begins

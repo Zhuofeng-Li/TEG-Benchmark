@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch_geometric.transforms as T
 from torch_geometric.loader import NeighborLoader
+from torch_geometric import seed_everything
 import tqdm
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
 from torch_geometric.loader import NeighborSampler
@@ -30,7 +31,7 @@ class GNN(torch.nn.Module):
 			self.conv = GINEConv(Linear(hidden_channels, hidden_channels), edge_dim=edge_dim)
 		elif model_type == 'EdgeConv':
 			self.conv = EdgeConvConv(Linear(2 * hidden_channels + edge_dim, hidden_channels), train_eps=True,
-                                     edge_dim=edge_dim)
+									 edge_dim=edge_dim)
 		elif model_type == 'GeneralConv':
 			self.conv = GeneralConv((-1, -1), hidden_channels, in_edge_channels=edge_dim)
 		else:
@@ -61,28 +62,33 @@ class Classifier(torch.nn.Module):
 class Model(torch.nn.Module):
 	def __init__(self, hidden_channels, out_channels, edge_dim, num_layers, model_type):
 		super().__init__()
-		self.gnn = GNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
+		self.model_type = model_type
+		if model_type != 'MLP':
+			self.gnn = GNN(hidden_channels, edge_dim, num_layers, model_type=model_type)
+		
 		self.classifier = Classifier(hidden_channels, out_channels)
 
 	def forward(self, data):
 		x = data.x
-		x = self.gnn(x, data.edge_index, data.edge_attr)
+		if self.model_type != 'MLP':
+			x = self.gnn(x, data.edge_index, data.edge_attr)
+		
 		pred = self.classifier(x)
 		return pred
 
 if __name__ == '__main__':
+	seed_everything(66)
+
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--data_type', '-dt', type=str, default='children',
-						help='goodreads dataset type for children, crime, history, mystery')
-	parser.add_argument('--emb_type', '-et', type=str, default='Angle',
-						help='embedding type for GNN, options are GPT-3.5-TURBO, Bert, Angle, None')
-	parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer',
-						help='Model type for GNN, options are GraphTransformer, GINE, Spline')
-	args = parser.parse_args()  
+	parser.add_argument('--data_type', '-dt', type=str, default='citation', help='Data type')
+	parser.add_argument('--emb_type', '-et', type=str, default='Angle', help='Embedding type')  # TODO: set edge dim
+	parser.add_argument('--model_type', '-mt', type=str, default='GraphTransformer', help='Model type')
+	args = parser.parse_args()
+
 
 	# Dataset = Children(root='.') 
 	# data = Dataset[0]   # TODO: Citation code in TAG
-	with open('citation_dataset/raw/filtered_citation_network.pkl', 'rb') as f:
+	with open(f'citation_dataset/raw/{args.data_type}.pkl', 'rb') as f:
 		data = pickle.load(f)
 
 
@@ -118,15 +124,38 @@ if __name__ == '__main__':
 	del data.text_node_labels
 	del data.text_edges
 
-	# load emb
-	if args.emb_type == 'Angle':  # TODO: reset emb name
-		data.edge_attr = torch.load('citation_dataset/emb/angle-edge.pt').squeeze().float()
-		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
-	elif args.emb_type == 'None':
-		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
-		data.x = torch.load('citation_dataset/emb/angle-node.pt').squeeze().float()
+	# set hidden channels and edge dim for diff emb type 
+	
+	if args.emb_type != 'None':
+		data.x = torch.load(f'citation_dataset/emb/{args.data_type}_{args.emb_type}_node.pt').squeeze().float().contiguous()
+		data.edge_attr = torch.load(f'citation_dataset/emb/{args.data_type}_{args.emb_type}_edge.pt').squeeze().float().contiguous()
+		if args.emb_type == 'GPT-3.5-TURBO':
+			edge_dim = 1536
+			node_dim = 1536
+		elif args.emb_type == 'Large_Bert':
+			edge_dim = 1024
+			node_dim = 1024
+		elif args.emb_type == 'Angle':
+			edge_dim = 1024
+			node_dim = 1024
+		else:
+			raise NotImplementedError('Embedding type not implemented')
 	else:
-		raise NotImplementedError('Embedding not implemented')
+		data.x = torch.load(f'citation_dataset/emb/citation_Large_Bert_node.pt').squeeze().float().contiguous()
+		data.edge_attr = torch.randn(num_edges, 1024).squeeze().float()
+		edge_dim = 1024
+		node_dim = 1024
+	
+	# Make sure all attributes of data are contiguous
+	data.x = data.x.contiguous()
+	data.edge_index = data.edge_index.contiguous()
+	
+	print(data)	
+
+	# Now create the NeighborLoaders
+	train_loader = NeighborLoader(data, input_nodes=data.train_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=True)
+	val_loader = NeighborLoader(data, input_nodes=data.val_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)
+	test_loader = NeighborLoader(data, input_nodes=data.test_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)
 
 	train_loader = NeighborLoader(data, input_nodes=data.train_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=True)
 	val_loader = NeighborLoader(data, input_nodes=data.val_mask, num_neighbors=[10, 10], batch_size=1024, shuffle=False)
@@ -135,7 +164,7 @@ if __name__ == '__main__':
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	print(device)
 
-	model = Model(hidden_channels=1024, out_channels=data.num_classes, edge_dim=1024, num_layers=2, model_type=args.model_type)
+	model = Model(hidden_channels=node_dim, out_channels=data.num_classes, edge_dim=edge_dim, num_layers=2, model_type=args.model_type)
 	model = model.to(device)
 
 	optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

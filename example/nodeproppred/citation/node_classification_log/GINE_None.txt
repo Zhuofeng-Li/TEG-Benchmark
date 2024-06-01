@@ -1,28 +1,29 @@
+Data(edge_index=[2, 1632754], y=[2123626], train_mask=[2123626], val_mask=[2123626], test_mask=[2123626], num_classes=24, num_nodes=2123626, x=[2123626, 1024], edge_attr=[1632754, 1024])
 cuda
 Validation begins
-F1 score: 0.7780
-Validation Accuracy: 0.7791
+F1 score: 0.7063
+Validation Accuracy: 0.7112
 Validation begins
-F1 score: 0.7838
-Validation Accuracy: 0.7867
+F1 score: 0.7192
+Validation Accuracy: 0.7227
 Validation begins
-F1 score: 0.7867
-Validation Accuracy: 0.7892
+F1 score: 0.7237
+Validation Accuracy: 0.7290
 Validation begins
-F1 score: 0.7878
-Validation Accuracy: 0.7902
+F1 score: 0.7233
+Validation Accuracy: 0.7256
 Validation begins
-F1 score: 0.7914
-Validation Accuracy: 0.7931
+F1 score: 0.7217
+Validation Accuracy: 0.7268
 Validation begins
-F1 score: 0.7912
-Validation Accuracy: 0.7928
+F1 score: 0.7272
+Validation Accuracy: 0.7265
 Validation begins
-F1 score: 0.7924
-Validation Accuracy: 0.7941
+F1 score: 0.7271
+Validation Accuracy: 0.7299
 Validation begins
-F1 score: 0.7917
-Validation Accuracy: 0.7927
+F1 score: 0.7284
+Validation Accuracy: 0.7316
 Validation begins
-F1 score: 0.7922
-Validation Accuracy: 0.7927
+F1 score: 0.7255
+Validation Accuracy: 0.7282

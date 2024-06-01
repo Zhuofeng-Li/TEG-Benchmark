@@ -139,27 +139,26 @@ if __name__ == "__main__":
     num_reviews = data['user', 'review', 'book'].num_edges
     num_descriptions = data["book", "description", "genre"].num_edges
 
+	
     # load emb 
-    if args.emb_type == 'GPT-3.5-TURBO':
-        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/review.npy')
+    if args.emb_type != 'None':
+        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_reviews_{args.emb_type}.npy')
         data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/edge_attr_book_genre.npy')
+        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_books_{args.emb_type}.npy')
         data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
         del npdata
-        edge_dim = 3072
-    elif args.emb_type == 'Bert':
-        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_reviews_bert.npy')
-        data['user', 'review', 'book'].edge_attr = torch.tensor(npdata).squeeze().float()
-        npdata = np.load(f'{args.data_type}/{args.data_type}_dataset/emb/{args.data_type}_books_bert.npy')
-        data['book', 'description', 'genre'].edge_attr = torch.tensor(npdata).squeeze().float()
-        del npdata
-        edge_dim = 768
-    elif args.emb_type == 'None':
+        if args.emb_type == 'GPT-3.5-TURBO':
+            edge_dim = 3072
+        elif args.emb_type == 'Bert':
+            edge_dim = 768
+        elif args.emb_type == 'Large_Bert':
+            edge_dim = 1024
+        else:
+            raise NotImplementedError('Embedding type not implemented')
+    else:
         data['user', 'review', 'book'].edge_attr = torch.randn(num_reviews, 3072).squeeze().float()
         data['book', 'description', 'genre'].edge_attr = torch.randn(num_descriptions, 3072).squeeze().float()
         edge_dim = 3072
-    else:
-        raise NotImplementedError('Embedding type not implemented')
 
     # select 4-star or 5-star review as the positive edge
     positive_edges_mask = (data['user', 'review', 'book'].edge_label == 5) | (
