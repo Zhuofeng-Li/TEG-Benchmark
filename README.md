@@ -18,7 +18,7 @@ TAG-Benchmark is a comprehensive collection of public text-attributed graph (TAG
 
 ## Datasets
 
-We have constructed seven comprehensive and representative TAG datasets (we will continue to expand). These datasets cover domains including Book Recommendation, E-commerce, Academic, and Social-network. They vary in size, ranging from small to large. Each dataset contains rich raw text data on both nodes and edges, providing a diverse range of information for analysis and modeling purposes. For statistics of these TAG datasets, please click [here](). # TODO: data table and picture
+We have constructed seven comprehensive and representative TAG datasets (we will continue to expand). These datasets cover domains including Book Recommendation, E-commerce, Academic, and Social networks. They vary in size, ranging from small to large. Each dataset contains rich raw text data on both nodes and edges, providing a diverse range of information for analysis and modeling purposes. For statistics of these TAG datasets, please click [here](). # TODO: data table and picture
 
 <p align='center'>
   <img src='assets/dataset.png' />
