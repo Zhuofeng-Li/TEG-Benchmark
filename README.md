@@ -16,10 +16,6 @@ Textual-Edge Graphs Datasets and Benchmark (TEG-DB) is a comprehensive and diver
   <img src='assets/feature.png' />
 </p>
 
-## Our experiments
-
-Please check experiment results and analysis from our paper.
-
 ## Datasets
 
 Please click [here](https://huggingface.co/datasets/Zixing-GOU/TEG-DB) to  find the TEG datasets we upload!
@@ -31,6 +27,10 @@ We have constructed nine comprehensive and representative TEG datasets (we will 
 </p>
 
 TEG-DB is an ongoing effort, and we are planning to increase our coverage in the future.
+
+## Our experiments
+
+Please check experiment results and analysis from our paper.
 
 ## Star
 
