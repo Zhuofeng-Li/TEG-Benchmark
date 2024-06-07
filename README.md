@@ -34,7 +34,7 @@ TEG-DB is an ongoing effort, and we are planning to increase our coverage in the
 
 ## Star
 
-Please star our repo 🌟 if you feel useful. Feel free to [email](zhuofengli12345@gmail.com) us if you have any questions.
+Please star our repo 🌟 if you feel useful. Feel free to [email](mailto:zhuofengli12345@gmail.com) us (zhuofengli12345@gmail.com) if you have any questions.
 
 ## Requirements
 
