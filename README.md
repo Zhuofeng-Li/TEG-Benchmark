@@ -17,14 +17,15 @@ Textual-Edge Graphs Datasets and Benchmark (TEG-DB) is a comprehensive and diver
 </p>
 
 ## Datasets
+Please click [here](https://huggingface.co/datasets/Zixing-GOU/TEG-DB) to  find the TEG datasets we upload!
 
-We have constructed nine comprehensive and representative TEG datasets (we will continue to expand). These datasets cover domains including Book Recommendation, E-commerce, Academic, and Social networks. They vary in size, ranging from small to large. Each dataset contains rich raw text data on both nodes and edges, providing a diverse range of information for analysis and modeling purposes. For statistics of these TEG datasets, please click [here](). # TODO: data table and picture
+We have constructed nine comprehensive and representative TEG datasets (we will continue to expand). These datasets cover domains including Book Recommendation, E-commerce, Academic, and Social networks. They vary in size, ranging from small to large. Each dataset contains rich raw text data on both nodes and edges, providing a diverse range of information for analysis and modeling purposes. 
 
 <p align='center'>
   <img src='assets/dataset.png' />
 </p>
 
-TEG-Benchmark is an ongoing effort, and we are planning to increase our coverage in the future.
+TEG-DB is an ongoing effort, and we are planning to increase our coverage in the future.
 
 ## Requirements
 
