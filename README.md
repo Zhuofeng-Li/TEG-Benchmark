@@ -2,7 +2,7 @@
   <img height='40%'  src='assets/logo.png' />
 </p>
 
-## Why TEG instead of TAG?
+## Why TEGs instead of TAGs?
 
 Textual-Edge Graphs (TEGs) incorporate textual content on both nodes and **edges**, unlike Text-Attributed Graphs (TAGs) featuring textual information only at the nodes. Edge texts are crucial for understanding document meanings and semantic relationships. For instance, as shown below, to understand the knowledge "Planck endorsed the uncertainty and probabilistic nature of quantum mechanics," **citation edge (Book D - Paper E) text information** is essential. This reveals the comprehensive connections and influences among scholarly works, enabling a deeper analysis of document semantics and knowledge networks.
 
