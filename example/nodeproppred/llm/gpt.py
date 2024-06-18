@@ -73,7 +73,7 @@ if __name__ == "__main__":
         labels += f"{value}: {key}\n"
     print(labels)
 
-    client = openai.OpenAI(api_key="sk-proj-SL6Tuouoki5dFkTKUiZKT3BlbkFJfgXFCIXpwdnkld2BPWy1")
+    client = openai.OpenAI(api_key="your api key")
 
     system_prompt = system_prompt + labels
 
