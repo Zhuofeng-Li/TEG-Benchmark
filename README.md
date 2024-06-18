@@ -38,10 +38,10 @@ TEG-DB is an ongoing effort, and we are planning to increase our coverage in the
 
 Please check experiment results and analysis from our [paper](https://arxiv.org/abs/2406.10310).
 
-```
 ## Star and Cite
 
 Please star our repo 🌟 and cite our [paper](https://arxiv.org/abs/2406.10310) if you feel useful. Feel free to [email](mailto:zhuofengli12345@gmail.com) us (zhuofengli12345@gmail.com) if you have any questions.
+
 ```
 @misc{li2024tegdb,
       title={TEG-DB: A Comprehensive Dataset and Benchmark of Textual-Edge Graphs}, 
