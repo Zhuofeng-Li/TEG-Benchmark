@@ -36,11 +36,22 @@ TEG-DB is an ongoing effort, and we are planning to increase our coverage in the
 
 ## Our experiments
 
-Please check experiment results and analysis from our paper.
+Please check experiment results and analysis from our [paper](https://arxiv.org/abs/2406.10310).
 
-## Star
+```
+## Star and Cite
 
-Please star our repo 🌟 if you feel useful. Feel free to [email](mailto:zhuofengli12345@gmail.com) us (zhuofengli12345@gmail.com) if you have any questions.
+Please star our repo 🌟 and cite our [paper](https://arxiv.org/abs/2406.10310) if you feel useful. Feel free to [email](mailto:zhuofengli12345@gmail.com) us (zhuofengli12345@gmail.com) if you have any questions.
+```
+@misc{li2024tegdb,
+      title={TEG-DB: A Comprehensive Dataset and Benchmark of Textual-Edge Graphs}, 
+      author={Zhuofeng Li and Zixing Gou and Xiangnan Zhang and Zhongyuan Liu and Sirui Li and Yuntong Hu and Chen Ling and Zheng Zhang and Liang Zhao},
+      year={2024},
+      eprint={2406.10310},
+      archivePrefix={arXiv},
+      primaryClass={id='cs.CL' full_name='Computation and Language' is_active=True alt_name='cmp-lg' in_archive='cs' is_general=False description='Covers natural language processing. Roughly includes material in ACM Subject Class I.2.7. Note that work on artificial languages (programming languages, logics, formal systems) that does not explicitly address natural-language issues broadly construed (natural-language processing, computational linguistics, speech, text retrieval, etc.) is not appropriate for this area.'}
+}
+```
 
 ## Requirements
 
