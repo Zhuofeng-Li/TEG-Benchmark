@@ -41,7 +41,7 @@ if __name__ == "__main__":
     dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.data_type)
 
     if args.data_type == 'reddit':
-        Dataset = Reddit(root=f'{args.data_type}')
+        Dataset = Reddit(root=dataset_path)
         system_prompt = '''
             This is the Reddit dataset, you need to do link prediction based on the nodes' text that I give to you. The data is sourced from Reddit, represent two prominent social media platforms.Nodes represent users and topics. 
             Below is a list of reddit's node pairs information, which means each information is a description of the node. Your task is to predict whether there should be a link between these two nodes.
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                      1, has link
             '''
     elif args.data_type == 'citation':
-        Dataset = Citation(root=f'{args.data_type}')
+        Dataset = Citation(root=dataset_path)
         system_prompt = '''
             The raw data for the citation network is sourced from the Open Research Corpus, derived from the complete Semantic Scholar 
                     corpus. Your task is to do link prediction. Nodes represent papers and edges represent the citation relationships 

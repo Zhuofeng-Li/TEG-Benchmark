@@ -8,8 +8,9 @@ from tqdm import tqdm
 from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
 from sklearn.preprocessing import MultiLabelBinarizer
 
-#from TAG.linkproppred.reddit import Reddit
-#from TAG.linkproppred.citation import Citation
+
+# from TAG.linkproppred.reddit import Reddit
+# from TAG.linkproppred.citation import Citation
 
 def truncate_text(text, max_tokens):
     tokens = text.split()
@@ -31,9 +32,8 @@ if __name__ == "__main__":
                         help='Number of ')
     args = parser.parse_args()
 
-
     if args.data_type == 'reddit':
-        #Dataset = Reddit(root=f'{args.data_type}')
+        # Dataset = Reddit(root=f'{args.data_type}')
         labels_dict = {0: "user nodes,not a moderator for Reddit community",
                        1: "user nodes,a moderator for Reddit community",
                        -1: "Subreddit nodes"}
@@ -60,11 +60,11 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError('Dataset not implemented')
 
-    #data = Dataset[0]
-    with open("reddit_graph.pkl","rb") as f:
-        data=pickle.load(f)
+    # data = Dataset[0]
+    with open("reddit_graph.pkl", "rb") as f:
+        data = pickle.load(f)
     if args.data_type == 'citation':
-        labels_dict = {i:value for i, value in enumerate(set(data.text_nodes))}
+        labels_dict = {i: value for i, value in enumerate(set(data.text_nodes))}
 
     category_to_label = {category: i for i, category in enumerate(labels_dict)}
 
@@ -84,10 +84,11 @@ if __name__ == "__main__":
 
     num_nodes = args.predict_node_number
 
-    node_index = [random.randint(0, len(data.text_nodes)-1) for _ in range(num_nodes)]
+    node_index = [random.randint(0, len(data.text_nodes) - 1) for _ in range(num_nodes)]
     print(f"{num_nodes} nodes loaded")
     for i in tqdm(range(num_nodes)):
-        truncated_node_text = truncate_text(data.text_nodes[node_index[i]], max_tokens_per_request - len(system_prompt.split()))
+        truncated_node_text = truncate_text(data.text_nodes[node_index[i]],
+                                            max_tokens_per_request - len(system_prompt.split()))
 
         completion_res = client.chat_completions.create(
             model=f"{args.GPT_type}",  # here model is a string of openai model name
@@ -99,7 +100,6 @@ if __name__ == "__main__":
         input_list.append(truncated_node_text)
         gpt_result = completion_res.choices[0].message.content  # here ans should be the string reply
         predicted_list.append(gpt_result)
-
 
     pred = []
     index = []
