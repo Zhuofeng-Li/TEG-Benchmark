@@ -71,7 +71,7 @@ Below we will take the `children` dataset in the `goodreads` folder as an exampl
 
 #### Datasets setup
 
-You can go to the [TEG-Benchmark]() (TODO) to find the datasets we upload! In each dataset folder, you can find the `.json` file (the text attribute of the dataset) in `raw` folder, `.npy` file (text embedding we extract from the PLM) in `emb` folder. Please copy thses files directly in `goodreads/children` folder!
+You can go to the [Huggingface TEG-Benchmark](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) to find the datasets we upload! In each dataset folder, you can find the `.json` file (the text attribute of the dataset) in `raw` folder, `.npy` file (text embedding we extract from the PLM) in `emb` folder. Please copy thses files directly in `goodreads/children` folder!
 
 ```bash
 cd example/linkproppred/goodreads/children
