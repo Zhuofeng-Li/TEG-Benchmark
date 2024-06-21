@@ -4,7 +4,7 @@
 
 ## Why TEGs instead of TAGs?
 
-Textual-Edge Graphs (TEGs) incorporate textual content on **both nodes and edges**, unlike Text-Attributed Graphs (TAGs) featuring textual information only at the **nodes**. Edge texts are crucial for understanding document meanings and semantic relationships. For instance, as shown below, to understand the knowledge "Planck endorsed the uncertainty and probabilistic nature of quantum mechanics," **citation edge (Book D - Paper E) text information is essential**. This reveals the comprehensive connections and influences among scholarly works, enabling a deeper analysis of document semantics and knowledge networks.
+Textual-Edge Graphs (TEGs) incorporate textual content on **both nodes and edges**, unlike Text-Attributed Graphs (TAGs) featuring textual information only at the **nodes**. **Edge texts are crucial for understanding document meanings and semantic relationships.** For instance, as shown below, to understand the knowledge "Planck endorsed the uncertainty and probabilistic nature of quantum mechanics," **citation edge (Book D - Paper E) text information is essential**. This reveals the comprehensive connections and influences among scholarly works, enabling a deeper analysis of document semantics and knowledge networks.
 
 ![alt text](assets/example.png)
 
@@ -53,7 +53,8 @@ Please star our repo 🌟 and cite our [paper](https://arxiv.org/abs/2406.10310)
 }
 ```
 
-## Requirements
+## Package Usage
+### Requirements
 
 + pyg=2.5.2
 
@@ -63,15 +64,15 @@ You can quickly install the corresponding dependencies,
 conda env create -f environment.yml
 ```
 
-## Package Usage
+### Package Usage
 
-The `TEG` folder in the project is designated for storing data preprocessing code to ensure data output in `PyG Data` format. The `example` folder is intended for housing all baseline models. Within it, the `linkproppred` and `nodeproppred` subfolders represent edge-level and node-level tasks, respectively. In the next level of directories, we organize the training code by using folders named after different domain datasets. TODO: dict structure img
+The `TEG` folder in the project is designated for storing data preprocessing code to ensure data output in `PyG Data` format. The `example` folder is intended to house all methods training codes. Within it, the `linkproppred` and `nodeproppred` subfolders represent edge-level and node-level tasks, respectively. In the next level of directories, we organize the training codes by using folders named after different domain datasets. 
 
-Below we will take the `children` dataset in the `goodreads` folder as an example to show how to use our benchmark.
+**Below we will take the `children` dataset in the `goodreads` folder as an example to show how to use our benchmark.**
 
-#### Datasets setup
+### Datasets setup
 
-You can go to the [Huggingface TEG-Benchmark](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) to find the datasets we upload! In each dataset folder, you can find the `.json` file (the text attribute of the dataset) in `raw` folder, `.npy` file (text embedding we extract from the PLM) in `emb` folder. Please copy thses files directly in `goodreads/children` folder!
+You can go to the [Huggingface TEG-Benchmark](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) to find the datasets we upload! In each dataset folder, you can find the `.json` file in `raw` folder, `.npy` file (text embedding we extract from the PLM) in `emb` folder. Please copy thses files directly in `goodreads/children` folder!
 
 ```bash
 cd example/linkproppred/goodreads/children
@@ -85,7 +86,7 @@ cd emb
 # copy `.npy` files to `emb` 
 ```
 
-#### GNN for link prediction
+### GNN for link prediction
 
 ```bash
 cd example/linkproppred/goodreads
@@ -97,7 +98,7 @@ python edge_aware_gnn.py --data_type children --emb_type Bert --model_type Graph
 # bash run_all.sh
 ```
 
-#### GNN for node classification
+### GNN for node classification
 
 Copy the children dataset and embeddings into the `example/nodeproppred/goodreads/children` directory, as we did before (the same dataset and embeddings used for link prediction are also used for node classification).
 
@@ -117,6 +118,24 @@ Here are explanations of some important args,
 --data_type: "the name of dataset"
 --emb_type: "embedding type"
 --model_type: "model type"
+```
+
+### LLM for link prediction
+
+```bash
+cd example/linkproppred/llm
+
+# Run the gpt.py script
+python gpt.py --data_type children --GPT_type gpt-4 
+```
+
+### LLM for node classification
+
+```bash
+cd example/nodeproppred/llm
+
+# Run the gpt.py script
+python gpt.py --data_type children --GPT_type gpt-4  --predict_node_number 11
 ```
 
 
