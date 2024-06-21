@@ -64,7 +64,7 @@ You can quickly install the corresponding dependencies,
 conda env create -f environment.yml
 ```
 
-### Package Usage
+### More details about folders
 
 The `TEG` folder in the project is designated for storing data preprocessing code to ensure data output in `PyG Data` format. The `example` folder is intended to house all methods training codes. Within it, the `linkproppred` and `nodeproppred` subfolders represent edge-level and node-level tasks, respectively. In the next level of directories, we organize the training codes by using folders named after different domain datasets. 
 
