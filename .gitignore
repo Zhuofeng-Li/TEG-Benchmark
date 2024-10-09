@@ -164,3 +164,4 @@ TAG_Benchmark/example/nodeproppred/citation/node_classification_log/tmp.ipynb
 example/linkproppred/*/*/*_dataset/
 example/nodeproppred/*/*/*_dataset/
 Dataset
+wandb/

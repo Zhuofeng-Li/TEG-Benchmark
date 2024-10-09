@@ -132,7 +132,7 @@ def main():
     parser.add_argument("--lr", type=float, default=0.0005)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument(
-        "--gnn_model", type=str, help="GNN Model", default="GraphTransformer"
+        "--gnn_model", type=str, help="GNN Model", default="GeneralConv"
     )
     parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--eval_steps", type=int, default=1)
