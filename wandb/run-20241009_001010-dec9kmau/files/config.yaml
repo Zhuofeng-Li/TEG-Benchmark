@@ -1,0 +1,75 @@
+_wandb:
+    value:
+        cli_version: 0.18.3
+        m: []
+        python_version: 3.10.12
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 49
+                - 53
+                - 55
+                - 76
+                - 77
+            "2":
+                - 1
+                - 5
+                - 11
+                - 49
+                - 53
+                - 55
+                - 76
+                - 77
+            "3":
+                - 16
+                - 23
+                - 55
+            "4": 3.10.12
+            "5": 0.18.3
+            "6": 4.16.0
+            "8":
+                - 5
+            "12": 0.18.3
+            "13": linux-x86_64
+batch_size:
+    value: 65536
+device:
+    value: 0
+dropout:
+    value: 0
+epochs:
+    value: 10
+eval_steps:
+    value: 1
+gnn_model:
+    value: GraphTransformer
+graph_path:
+    value: Dataset/goodreads_children/processed/children.pkl
+heads:
+    value: 4
+hidden_channels:
+    value: 256
+log_steps:
+    value: 1
+lr:
+    value: 0.001
+neg_len:
+    value: "10000"
+num_layers:
+    value: 3
+path:
+    value: Dataset/goodreads_children/LinkPrediction/
+runs:
+    value: 5
+test_ratio:
+    value: 0.08
+use_PLM_edge:
+    value: Dataset/goodreads_children/emb/children_bert_base_uncased_512_cls_edge.pt
+use_PLM_node:
+    value: Dataset/goodreads_children/emb/children_bert_base_uncased_512_cls_node.pt
+use_node_embedding:
+    value: false
+val_ratio:
+    value: 0.02

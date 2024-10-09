@@ -1,0 +1,49 @@
+{
+  "os":  "Linux-6.8.0-1015-gcp-x86_64-with-glibc2.35",
+  "python":  "3.10.12",
+  "startedAt":  "2024-10-09T00:10:10.302843Z",
+  "args":  [
+    "--use_PLM_node",
+    "Dataset/goodreads_children/emb/children_bert_base_uncased_512_cls_node.pt",
+    "--use_PLM_edge",
+    "Dataset/goodreads_children/emb/children_bert_base_uncased_512_cls_edge.pt",
+    "--path",
+    "Dataset/goodreads_children/LinkPrediction/",
+    "--graph_path",
+    "Dataset/goodreads_children/processed/children.pkl"
+  ],
+  "program":  "/home/lizhuofeng/TEG-Benchmark/GNN/GNN_Link_HitsK.py",
+  "codePath":  "GNN/GNN_Link_HitsK.py",
+  "email":  "1004271927@qq.com",
+  "root":  "/home/lizhuofeng/TEG-Benchmark",
+  "host":  "rag",
+  "username":  "lizhuofeng",
+  "executable":  "/usr/bin/python",
+  "codePathLocal":  "GNN/GNN_Link_HitsK.py",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "gpu":  "[NVIDIA A100-SXM4-40GB]",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "207929917440",
+      "used":  "154713255936"
+    }
+  },
+  "memory":  {
+    "total":  "89619501056"
+  },
+  "cpu":  {
+    "count":  6,
+    "countLogical":  12
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA A100-SXM4-40GB",
+      "memoryTotal":  "42949672960",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    }
+  ],
+  "cudaVersion":  "12.5"
+}
