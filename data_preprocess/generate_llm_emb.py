@@ -66,7 +66,7 @@ def main():
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=1020,
+        default=1000,
         help="Number of batch size for inference",
     )
     parser.add_argument("--fp16", type=bool, default=True, help="if fp16")
