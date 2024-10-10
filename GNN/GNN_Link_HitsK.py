@@ -217,7 +217,7 @@ def main():
     ].float()
 
     edge_index = edge_split["train"]["edge"].t()
-    adj_t = SparseTensor.from_edge_index(edge_index, edge_feature).t()
+    adj_t = SparseTensor.from_edge_index(edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)).t()
     adj_t = adj_t.to_symmetric().to(device)  
     if args.gnn_model == "GAT":
         model = GAT(

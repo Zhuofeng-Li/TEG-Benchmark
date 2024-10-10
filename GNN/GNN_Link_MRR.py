@@ -131,15 +131,13 @@ def main():
     parser.add_argument("--batch_size", type=int, default=64 * 1024)
     parser.add_argument("--lr", type=float, default=0.0005)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument(
-        "--gnn_model", type=str, help="GNN Model", default="GeneralConv"
-    )
+    parser.add_argument("--gnn_model", type=str, help="GNN Model", default="GeneralGNN")
     parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--eval_steps", type=int, default=1)
     parser.add_argument("--runs", type=int, default=5)
     parser.add_argument("--test_ratio", type=float, default=0.08)
     parser.add_argument("--val_ratio", type=float, default=0.02)
-    parser.add_argument("--neg_len", type=int, default=20)
+    parser.add_argument("--neg_len", type=int, default=50)
     parser.add_argument(
         "--use_PLM_node",
         "-pn",
@@ -186,7 +184,11 @@ def main():
     graph.num_nodes = len(graph.text_nodes)
 
     edge_split = split_edge_mrr(
-        graph, test_ratio=args.test_ratio, val_ratio=args.val_ratio, path=args.path, neg_len=args.neg_len
+        graph,
+        test_ratio=args.test_ratio,
+        val_ratio=args.val_ratio,
+        path=args.path,
+        neg_len=args.neg_len,
     )
 
     x = torch.load(args.use_PLM_node).float().to(device)
@@ -206,10 +208,12 @@ def main():
         "target_node_neg": edge_split["valid"]["target_node_neg"],
     }
 
-    edge_index = edge_split["train"]["edge"].t()
-    adj_t = SparseTensor.from_edge_index(edge_index, edge_feature).t()
-    adj_t = adj_t.to_symmetric().to(device)  
     
+    edge_index = edge_split["train"]["edge"].t()
+    print(edge_index.max())
+    adj_t = SparseTensor.from_edge_index(edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)).t()
+    adj_t = adj_t.to_symmetric().to(device)
+
     if args.gnn_model == "GAT":
         model = GAT(
             x.size(1),
