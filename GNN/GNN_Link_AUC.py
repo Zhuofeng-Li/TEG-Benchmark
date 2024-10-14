@@ -203,7 +203,7 @@ if __name__ == "__main__":
             with torch.no_grad():
                 preds = []
                 ground_truths = []
-                for sampled_data in tqdm.tqdm(test_loader):
+                for sampled_data in tqdm.tqdm(test_loader):  # TODO: use val_loader
                     sampled_data = sampled_data.to(device)
                     adj_t = SparseTensor.from_edge_index(
                         sampled_data.edge_index, sampled_data.edge_attr
