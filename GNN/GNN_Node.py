@@ -15,18 +15,119 @@ from sklearn.metrics import accuracy_score
 import argparse
 from torch_geometric.data import Data
 from sklearn.preprocessing import MultiLabelBinarizer
+from torch.utils.data import DataLoader
 
 
 class Classifier(torch.nn.Module):
     def __init__(self, hidden_channels, out_channels):
         super().__init__()
-        self.lin1 = Linear(hidden_channels, hidden_channels // 4)
-        self.lin2 = Linear(hidden_channels // 4, out_channels)
+        self.lin1 = Linear(hidden_channels, hidden_channels)
+        self.lin2 = Linear(hidden_channels, out_channels)
 
     def forward(self, x):
         x = self.lin1(x).relu()
         x = self.lin2(x)
         return x
+
+
+def gen_model(args, device, x, edge_feature):
+    if args.gnn_model == "GAT":
+        model = GAT(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.heads,
+            args.dropout,
+        ).to(device)
+    elif args.gnn_model == "GraphTransformer":
+        model = GraphTransformer(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        ).to(device)
+    elif args.gnn_model == "GINE":
+        model = GINE(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        ).to(device)
+    elif args.gnn_model == "GeneralGNN":
+        model = GeneralGNN(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        ).to(device)
+    else:
+        raise ValueError("Not implemented")
+    return model
+
+
+def train(model, predictor, x, adj_t, train_idx, y, optimizer, criterion, batch_size):
+    model.train()
+    predictor.train()
+
+    total_loss = total_examples = 0
+    for perm in DataLoader(train_idx, batch_size, shuffle=True):
+        optimizer.zero_grad()
+        h = model(x, adj_t)
+        pred = predictor(h[perm])
+        loss = criterion(pred, y[perm].float())
+        loss.backward()
+        optimizer.step()
+        total_loss += float(loss) * pred.numel()
+        total_examples += pred.numel()
+    return total_examples, total_loss
+
+
+def process_data(args, device, data):  # TODO: process all data here 
+    num_nodes = len(data.text_nodes)
+    data.num_nodes = num_nodes
+
+    product_indices = torch.tensor(
+        [
+            i for i, label in enumerate(data.text_node_labels) if label != -1
+        ]  # TODO: check the label in each dataset
+    )
+    product_labels = [label for label in data.text_node_labels if label != -1]
+    mlb = MultiLabelBinarizer()
+    product_binary_labels = mlb.fit_transform(product_labels)
+    y = torch.zeros(num_nodes, product_binary_labels.shape[1]).float()
+    y[product_indices] = torch.tensor(product_binary_labels).float()
+    y = y.to(device)  # TODO: check the label
+
+    train_ratio = 1 - args.test_ratio - args.val_ratio
+    val_ratio = args.val_ratio
+
+    num_products = product_indices.shape[0]
+    train_idx = product_indices[: int(num_products * train_ratio)]
+    val_idx = product_indices[
+        int(num_products * train_ratio) : int(num_products * (train_ratio + val_ratio))
+    ]
+    test_idx = product_indices[
+        int(product_indices.shape[0] * (train_ratio + val_ratio)) :
+    ]
+
+    x = torch.load(args.use_PLM_node).squeeze().float().to(device)
+    edge_feature = torch.load(args.use_PLM_edge).squeeze().float()
+
+    edge_index = data.edge_index
+    adj_t = SparseTensor.from_edge_index(
+        edge_index, edge_feature, sparse_sizes=(data.num_nodes, data.num_nodes)
+    ).t()
+    adj_t = adj_t.to_symmetric().to(device)
+    node_split = {"train": train_idx, "val": val_idx, "test": test_idx}
+    return node_split, x, edge_feature, adj_t, y
 
 
 if __name__ == "__main__":
@@ -68,6 +169,7 @@ if __name__ == "__main__":
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--test_ratio", type=float, default=0.1)
     parser.add_argument("--val_ratio", type=float, default=0.1)
+    parser.add_argument("--batch_size", type=int, default=1024)
     args = parser.parse_args()
 
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
@@ -76,222 +178,60 @@ if __name__ == "__main__":
     with open(f"{args.graph_path}", "rb") as f:
         data = pickle.load(f)
 
-    num_nodes = len(data.text_nodes)
-    num_edges = len(data.text_edges)
-    data.num_nodes = num_nodes
+    node_split, x, edge_feature, adj_t, y = process_data(args, device, data)
+    train_idx = node_split["train"]  # TODO: more split 
 
-    product_indices = torch.tensor(
-        [i for i, label in enumerate(data.text_node_labels) if label != -1]
-    )
-    user_indices = torch.tensor(
-        [i for i, label in enumerate(data.text_node_labels) if label == -1]
-    )
-    product_labels = [label for label in data.text_node_labels if label != -1]
-    real_id = 0
-    n_id_to_index = {}
-    for i, label in enumerate(data.text_node_labels):
-        if label != -1:
-            n_id_to_index[i] = real_id
-            real_id += 1
-
-    mlb = MultiLabelBinarizer()
-    binary_labels = mlb.fit_transform(product_labels)
-    y = torch.tensor(binary_labels).long()
-
-    train_ratio = 1 - args.test_ratio - args.val_ratio
-    val_ratio = args.val_ratio
-
-    num_train_products = int(len(product_labels) * train_ratio)
-    num_val_products = int(len(product_labels) * val_ratio)
-    num_test_products = int(len(product_labels)) - num_train_products - num_val_products
-
-    train_mask = torch.zeros(num_nodes, dtype=torch.bool)
-    val_mask = torch.zeros(num_nodes, dtype=torch.bool)
-    test_mask = torch.zeros(num_nodes, dtype=torch.bool)
-
-    train_mask[product_indices[:num_train_products]] = 1  # TODO: wrong 
-    train_mask[user_indices] = 1
-    val_mask[
-        product_indices[num_train_products + num_val_products]
-    ] = 1  # TODO:how to set val_mask
-    val_mask[user_indices] = 1
-    test_mask[product_indices[-num_test_products:]] = 1  # TODO: random shuffle
-
-    num_classes = len(mlb.classes_)
-
-    x = torch.load(args.use_PLM_node).squeeze().float()
-    edge_feature = torch.load(args.use_PLM_edge).squeeze().float()
-    data = Data(
-        x=x,
-        y=y,
-        edge_index=data.edge_index,
-        edge_attr=edge_feature,
-        train_mask=train_mask,
-        val_mask=val_mask,
-        test_mask=test_mask,
-        num_classes=num_classes,
-    )
-
-    print(data)
-
-    train_loader = NeighborLoader(
-        data,
-        input_nodes=data.train_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=True,
-    )
-    val_loader = NeighborLoader(
-        data,
-        input_nodes=data.val_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=False,
-    )
-    test_loader = NeighborLoader(
-        data,
-        input_nodes=data.test_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=False,
-    )
-
-    train_loader = NeighborLoader(
-        data,
-        input_nodes=data.train_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=True,
-    )
-    val_loader = NeighborLoader(
-        data,
-        input_nodes=data.val_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=False,
-    )
-    test_loader = NeighborLoader(
-        data,
-        input_nodes=data.test_mask,
-        num_neighbors=[10, 10],
-        batch_size=1024,
-        shuffle=False,
-    )
-
-    if args.gnn_model == "GAT":
-        model = GAT(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.heads,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GraphTransformer":
-        model = GraphTransformer(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GINE":
-        model = GINE(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GeneralGNN":
-        model = GeneralGNN(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    else:
-        raise ValueError("Not implemented")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
-
+    model = gen_model(args, device, x, edge_feature)
     model = model.to(device)
-    predictor = Classifier(args.hidden_channels, data.num_classes).to(device)
+    predictor = Classifier(args.hidden_channels,  y.shape[1]).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = torch.nn.CrossEntropyLoss()
-    data_type = args.graph_path.split("/")[-1]
+    data_type = args.graph_path.split("/")[-1]  # TODO: update split way
 
     for epoch in range(1, 1 + args.epochs):
-        total_loss = total_examples = 0
-        for sampled_data in tqdm.tqdm(train_loader):
-            optimizer.zero_grad()
-            sampled_data = sampled_data.to(device)
-            adj_t = SparseTensor.from_edge_index(
-                sampled_data.edge_index, sampled_data.edge_attr
-            ).t()
-            adj_t = adj_t.to_symmetric()
-            x = model(sampled_data.x, adj_t)
-            pred = predictor(x)
-
-            new_indices = [
-                n_id_to_index.get(n_id.item(), -1) for n_id in sampled_data.n_id
-            ]
-            valid_indices = [index for index in new_indices if index != -1]
-            judge = [True if x != -1 else False for x in new_indices]
-            if valid_indices:
-                true = sampled_data.y[torch.tensor(valid_indices)].to(device)
-                out_filtered = pred[torch.tensor(judge, dtype=torch.bool)]
-            else:
-                raise ValueError("No valid indices found for sampled_data.y.")
-
-            loss = criterion(out_filtered, true.float())
-            # loss = criterion(pred, ground_truth)
-            loss.backward()
-            optimizer.step()
-            total_loss += float(loss) * pred.numel()
-            total_examples += pred.numel()
+        total_examples, total_loss = train(
+            model, predictor, x, adj_t, train_idx, y, optimizer, criterion, args.batch_size
+        )
         print(f"Epoch: {epoch:03d}, Loss: {total_loss / total_examples:.4f}")
 
-        # validation
-        if epoch % args.eval_steps == 0 and epoch != 0:
-            print("Validation begins")
-            with torch.no_grad():
-                preds = []
-                ground_truths = []
-                for sampled_data in tqdm.tqdm(test_loader):
-                    sampled_data = sampled_data.to(device)
-                    adj_t = SparseTensor.from_edge_index(
-                        sampled_data.edge_index, sampled_data.edge_attr
-                    ).t()
-                    adj_t = adj_t.to_symmetric()
-                    x = model(sampled_data.x, adj_t)
-                    pred = predictor(x)
-                    new_indices = [
-                        n_id_to_index.get(n_id.item(), -1) for n_id in sampled_data.n_id
-                    ]
-                    valid_indices = [index for index in new_indices if index != -1]
-                    judge = [True if x != -1 else False for x in new_indices]
-                    if valid_indices:
-                        true = sampled_data.y[torch.tensor(valid_indices)].to(device)
-                        out_filtered = pred[torch.tensor(judge, dtype=torch.bool)]
+        # # validation
+        # if epoch % args.eval_steps == 0 and epoch != 0:
+        #     print("Validation begins")
+        #     with torch.no_grad():
+        #         preds = []
+        #         ground_truths = []
+        #         for sampled_data in tqdm.tqdm(test_loader):
+        #             sampled_data = sampled_data.to(device)
+        #             adj_t = SparseTensor.from_edge_index(
+        #                 sampled_data.edge_index, sampled_data.edge_attr
+        #             ).t()
+        #             adj_t = adj_t.to_symmetric()
+        #             x = model(sampled_data.x, adj_t)
+        #             new_indices = [
+        #                 n_id_to_index.get(n_id.item(), -1) for n_id in sampled_data.n_id
+        #             ]
+        #             valid_indices = torch.tensor(
+        #                 [index for index in new_indices if index != -1]
+        #             )
+        #             find_product_indices = torch.tensor(
+        #                 [True if x != -1 else False for x in new_indices]
+        #             )
+        #             x = x[find_product_indices]
+        #             pred = predictor(x)
+        #             ground_truth = sampled_data.y[valid_indices].to(device)
 
-                    preds.append(out_filtered)
-                    ground_truths.append(true)
+        #             preds.append(pred)
+        #             ground_truths.append(ground_truth)
 
-                preds = torch.cat(preds, dim=0).cpu().numpy()
-                ground_truth = torch.cat(ground_truths, dim=0).cpu().numpy()
+        #         preds = torch.cat(preds, dim=0).cpu().numpy()
+        #         ground_truths = torch.cat(ground_truths, dim=0).cpu().numpy()
 
-                y_label = (preds > args.threshold).astype(int)
-                f1 = f1_score(ground_truth, y_label, average="weighted")
-                print(f"F1 score: {f1:.4f}")
-                if data_type not in ["twitter.pkl", "reddit.pkl", "citation.pkl"]:
-                    auc = roc_auc_score(ground_truth, preds, average="micro")
-                    print(f"Validation AUC: {auc:.4f}")
-                else:
-                    accuracy = accuracy_score(ground_truth, y_label)
-                    print(f"Validation Accuracy: {accuracy:.4f}")
+        #         y_label = (preds > args.threshold).astype(int)
+        #         f1 = f1_score(ground_truths, y_label, average="weighted")
+        #         print(f"F1 score: {f1:.4f}")
+        #         if data_type not in ["twitter.pkl", "reddit.pkl", "citation.pkl"]:
+        #             auc = roc_auc_score(ground_truths, preds, average="micro")
+        #             print(f"Validation AUC: {auc:.4f}")
+        #         else:
+        #             accuracy = accuracy_score(ground_truths, y_label)
+        #             print(f"Validation Accuracy: {accuracy:.4f}")

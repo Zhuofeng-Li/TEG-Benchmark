@@ -214,7 +214,7 @@ def main():
     adj_t = SparseTensor.from_edge_index(edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)).t()
     adj_t = adj_t.to_symmetric().to(device)
 
-    if args.gnn_model == "GAT":
+    if args.gnn_model == "GAT":  # TODO: use `gen_model` func to simplify the code
         model = GAT(
             x.size(1),
             edge_feature.size(1),

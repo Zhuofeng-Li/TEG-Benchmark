@@ -73,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--test_ratio", type=float, default=0.1)
     parser.add_argument("--val_ratio", type=float, default=0.1)
+    parser.add_argument("--batch_size", type=int, default=1024)
     args = parser.parse_args()
 
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
@@ -105,7 +106,7 @@ if __name__ == "__main__":
         num_neighbors=[20, 10],
         edge_label_index=(edge_label_index),
         edge_label=edge_label,
-        batch_size=1024,
+        batch_size=args.batch_size,
         shuffle=True,
     )
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
         num_neighbors=[20, 10],
         edge_label_index=(edge_label_index),
         edge_label=edge_label,
-        batch_size=1024,
+        batch_size=args.batch_size,
         shuffle=False,
     )
 
@@ -127,7 +128,7 @@ if __name__ == "__main__":
         num_neighbors=[20, 10],
         edge_label_index=(edge_label_index),
         edge_label=edge_label,
-        batch_size=1024,
+        batch_size=args.batch_size,
         shuffle=False,
     )
 
