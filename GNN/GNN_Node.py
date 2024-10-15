@@ -26,7 +26,7 @@ class Classifier(torch.nn.Module):
         return x
 
 
-def gen_model(args, device, x, edge_feature):
+def gen_model(args, x, edge_feature):
     if args.gnn_model == "GAT":
         model = GAT(
             x.size(1),
@@ -36,7 +36,7 @@ def gen_model(args, device, x, edge_feature):
             args.num_layers,
             args.heads,
             args.dropout,
-        ).to(device)
+        )
     elif args.gnn_model == "GraphTransformer":
         model = GraphTransformer(
             x.size(1),
@@ -45,7 +45,7 @@ def gen_model(args, device, x, edge_feature):
             args.hidden_channels,
             args.num_layers,
             args.dropout,
-        ).to(device)
+        )
     elif args.gnn_model == "GINE":
         model = GINE(
             x.size(1),
@@ -54,7 +54,7 @@ def gen_model(args, device, x, edge_feature):
             args.hidden_channels,
             args.num_layers,
             args.dropout,
-        ).to(device)
+        )
     elif args.gnn_model == "GeneralGNN":
         model = GeneralGNN(
             x.size(1),
@@ -63,7 +63,7 @@ def gen_model(args, device, x, edge_feature):
             args.hidden_channels,
             args.num_layers,
             args.dropout,
-        ).to(device)
+        )
     else:
         raise ValueError("Not implemented")
     return model
@@ -161,6 +161,7 @@ def test(model, predictor, test_loader, args):
 
 
 if __name__ == "__main__":
+    # TODO: use wandb as log
     seed_everything(66)
 
     parser = argparse.ArgumentParser()
@@ -233,7 +234,7 @@ if __name__ == "__main__":
         shuffle=False,
     )  # TODO: move `num_neighbors` to args
 
-    model = gen_model(args, device, x, edge_feature)
+    model = gen_model(args, x, edge_feature)
     model = model.to(device)
     predictor = Classifier(args.hidden_channels, y.shape[1]).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

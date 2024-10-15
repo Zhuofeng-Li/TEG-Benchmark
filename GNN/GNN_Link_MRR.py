@@ -1,9 +1,10 @@
+from torch_geometric.data import Data
+from torch_geometric.loader import LinkNeighborLoader
 import argparse
 import pickle
 
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 
 from torch_sparse import SparseTensor
 
@@ -40,27 +41,105 @@ class LinkPredictor(torch.nn.Module):
         return torch.sigmoid(x)
 
 
-def train(model, predictor, x, adj_t, edge_split, optimizer, batch_size):
+def gen_loader(args, edge_split, x, edge_index, adj_t):
+    train_data = Data(x=x, adj_t=adj_t)
+    train_loader = LinkNeighborLoader(
+        data=train_data,
+        num_neighbors=[20, 10],
+        edge_label_index=(edge_index),
+        edge_label=torch.ones(edge_index.shape[1]),
+        batch_size=args.batch_size,
+        neg_sampling_ratio=0.0,
+        shuffle=True,
+    )
+
+    val_edge_label_index = edge_split["valid"]["edge"].t()
+    val_loader = LinkNeighborLoader(
+        data=train_data,
+        num_neighbors=[20, 10],
+        edge_label_index=(val_edge_label_index),
+        edge_label=torch.ones(val_edge_label_index.shape[1]),
+        batch_size=args.batch_size,
+        neg_sampling_ratio=0.0,
+        shuffle=False,
+    )
+
+    test_edge_label_index = edge_split["test"]["edge"].t()
+    test_loader = LinkNeighborLoader(
+        data=train_data,
+        num_neighbors=[20, 10],
+        edge_label_index=(test_edge_label_index),
+        edge_label=torch.ones(test_edge_label_index.shape[1]),
+        batch_size=args.batch_size,
+        neg_sampling_ratio=0.0,
+        shuffle=False,
+    )
+
+    return train_loader, val_loader, test_loader
+
+
+def gen_model(args, x, edge_feature):
+    if args.gnn_model == "GAT":
+        model = GAT(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.heads,
+            args.dropout,
+        )
+    elif args.gnn_model == "GraphTransformer":
+        model = GraphTransformer(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    elif args.gnn_model == "GINE":
+        model = GINE(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    elif args.gnn_model == "GeneralGNN":
+        model = GeneralGNN(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    else:
+        raise ValueError("Not implemented")
+    return model
+
+
+def train(model, predictor, train_loader, optimizer, device):
     model.train()
     predictor.train()
 
-    source_edge = edge_split["train"]["source_node"].to(x.device)
-    target_edge = edge_split["train"]["target_node"].to(x.device)
-
     total_loss = total_examples = 0
-    for perm in DataLoader(range(source_edge.size(0)), batch_size, shuffle=True):
+    for batch in train_loader:
         optimizer.zero_grad()
+        batch = batch.to(device)
+        h = model(batch.x, batch.adj_t)
 
-        h = model(x, adj_t)
-
-        src, dst = source_edge[perm], target_edge[perm]
+        src = batch.edge_label_index.t()[:, 0]
+        dst = batch.edge_label_index.t()[:, 1]
 
         pos_out = predictor(h[src], h[dst])
         pos_loss = -torch.log(pos_out + 1e-15).mean()
 
         # Just do some trivial random sampling.
         dst_neg = torch.randint(
-            0, x.size(0), src.size(), dtype=torch.long, device=h.device
+            0, h.size(0), src.size(), dtype=torch.long, device=h.device
         )
         neg_out = predictor(h[src], h[dst_neg])
         neg_loss = -torch.log(1 - neg_out + 1e-15).mean()
@@ -77,28 +156,30 @@ def train(model, predictor, x, adj_t, edge_split, optimizer, batch_size):
 
 
 @torch.no_grad()
-def test(model, predictor, x, adj_t, edge_split, evaluator, batch_size, neg_len):
+def test(model, predictor, dataloaders, evaluator, neg_len, device):
     model.eval()
     predictor.eval()
 
-    h = model(x, adj_t)
-
-    def test_split(split, neg_len):
-        source = edge_split[split]["source_node"].to(h.device)
-        target = edge_split[split]["target_node"].to(h.device)
-        target_neg = edge_split[split]["target_node_neg"].to(h.device)
-
+    def test_split(dataloader, neg_len, device):
         pos_preds = []
-        for perm in DataLoader(range(source.size(0)), batch_size):
-            src, dst = source[perm], target[perm]
+        for batch in dataloader:
+            batch = batch.to(device)
+            h = model(batch.x, batch.adj_t)
+            src = batch.edge_label_index.t()[:, 0]
+            dst = batch.edge_label_index.t()[:, 1]
             pos_preds += [predictor(h[src], h[dst]).squeeze().cpu()]
         pos_pred = torch.cat(pos_preds, dim=0)
 
         neg_preds = []
-        source = source.view(-1, 1).repeat(1, neg_len).view(-1)
-        target_neg = target_neg.view(-1)
-        for perm in DataLoader(range(source.size(0)), batch_size):
-            src, dst_neg = source[perm], target_neg[perm]
+
+        for batch in dataloader:
+            batch = batch.to(device)
+            h = model(batch.x, batch.adj_t)
+            src = batch.edge_label_index.t()[:, 0]
+            dst_neg = torch.randint(
+                0, h.size(0), [len(src), int(neg_len)], dtype=torch.long
+            ).view(-1)
+            src = src.view(-1, 1).repeat(1, neg_len).view(-1)
             neg_preds += [predictor(h[src], h[dst_neg]).squeeze().cpu()]
         neg_pred = torch.cat(neg_preds, dim=0).view(-1, neg_len)
 
@@ -113,9 +194,9 @@ def test(model, predictor, x, adj_t, edge_split, evaluator, batch_size, neg_len)
             .item()
         )
 
-    train_mrr = test_split("eval_train", neg_len)
-    valid_mrr = test_split("valid", neg_len)
-    test_mrr = test_split("test", neg_len)
+    train_mrr = test_split(dataloaders["train"], neg_len, device)
+    valid_mrr = test_split(dataloaders["valid"], neg_len, device)
+    test_mrr = test_split(dataloaders["test"], neg_len, device)
 
     return train_mrr, valid_mrr, test_mrr
 
@@ -123,7 +204,7 @@ def test(model, predictor, x, adj_t, edge_split, evaluator, batch_size, neg_len)
 def main():
     parser = argparse.ArgumentParser(description="Link-Prediction PLM/TCL")
     parser.add_argument("--device", type=int, default=0)
-    parser.add_argument("--log_steps", type=int, default=5)
+    parser.add_argument("--log_steps", type=int, default=1)  # TODO: update latter
     parser.add_argument("--use_node_embedding", action="store_true")
     parser.add_argument("--num_layers", type=int, default=2)
     parser.add_argument("--hidden_channels", type=int, default=256)
@@ -202,57 +283,19 @@ def main():
     idx = torch.randperm(edge_split["train"]["source_node"].numel())[
         : len(edge_split["valid"]["source_node"])
     ]
-    edge_split["eval_train"] = {
-        "source_node": edge_split["train"]["source_node"][idx],
-        "target_node": edge_split["train"]["target_node"][idx],
-        "target_node_neg": edge_split["valid"]["target_node_neg"],
-    }
 
-    
     edge_index = edge_split["train"]["edge"].t()
-    print(edge_index.max())
-    adj_t = SparseTensor.from_edge_index(edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)).t()
+    adj_t = SparseTensor.from_edge_index(
+        edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)
+    ).t()
     adj_t = adj_t.to_symmetric().to(device)
 
-    if args.gnn_model == "GAT":  # TODO: use `gen_model` func to simplify the code
-        model = GAT(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.heads,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GraphTransformer":
-        model = GraphTransformer(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GINE":
-        model = GINE(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GeneralGNN":
-        model = GeneralGNN(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    else:
-        raise ValueError("Not implemented")
+    train_loader, val_loader, test_loader = gen_loader(
+        args, edge_split, x, edge_index, adj_t
+    )
+    dataloaders = {"train": train_loader, "valid": val_loader, "test": test_loader}
+
+    model = gen_model(args, x, edge_feature).to(device)
 
     predictor = LinkPredictor(
         args.hidden_channels, args.hidden_channels, 1, args.num_layers, args.dropout
@@ -269,20 +312,11 @@ def main():
         )
 
         for epoch in range(1, 1 + args.epochs):
-            loss = train(
-                model, predictor, x, adj_t, edge_split, optimizer, args.batch_size
-            )
+            loss = train(model, predictor, train_loader, optimizer, device)
             wandb.log({"Loss": loss})
             if epoch % args.eval_steps == 0:
                 result = test(
-                    model,
-                    predictor,
-                    x,
-                    adj_t,
-                    edge_split,
-                    evaluator,
-                    args.batch_size,
-                    args.neg_len,
+                    model, predictor, dataloaders, evaluator, args.neg_len, device
                 )
                 logger.add_result(run, result)
 

@@ -295,11 +295,13 @@ def split_edge_mrr(
                 "source_node": val_pos_u,
                 "target_node": val_pos_v,
                 "target_node_neg": valid_target_neg,
+                "edge": th.stack((val_pos_u, val_pos_v), dim=1),
             },
             "test": {
                 "source_node": test_pos_u,
                 "target_node": test_pos_v,
                 "target_node_neg": test_target_neg,
+                "edge": th.stack((test_pos_u, test_pos_v), dim=1),
             },
         }
 

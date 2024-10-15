@@ -197,7 +197,6 @@ def main():
     wandb.init(config=args, reinit=True)
     print(args)
 
-	# TODO: move to `load_data` func
     if not os.path.exists(f"{args.path}{args.neg_len}/"):
         os.makedirs(f"{args.path}{args.neg_len}/")
 

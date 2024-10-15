@@ -34,6 +34,48 @@ class Classifier(torch.nn.Module):
         return z.view(-1)
 
 
+def gen_model(args, x, edge_feature):
+    if args.gnn_model == "GAT":
+        model = GAT(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.heads,
+            args.dropout,
+        )
+    elif args.gnn_model == "GraphTransformer":
+        model = GraphTransformer(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    elif args.gnn_model == "GINE":
+        model = GINE(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    elif args.gnn_model == "GeneralGNN":
+        model = GeneralGNN(
+            x.size(1),
+            edge_feature.size(1),
+            args.hidden_channels,
+            args.hidden_channels,
+            args.num_layers,
+            args.dropout,
+        )
+    else:
+        raise ValueError("Not implemented")
+    return model
+
 if __name__ == "__main__":
     seed_everything(66)
 
@@ -132,45 +174,7 @@ if __name__ == "__main__":
         shuffle=False,
     )
 
-    if args.gnn_model == "GAT":
-        model = GAT(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.heads,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GraphTransformer":
-        model = GraphTransformer(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GINE":
-        model = GINE(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    elif args.gnn_model == "GeneralGNN":
-        model = GeneralGNN(
-            x.size(1),
-            edge_feature.size(1),
-            args.hidden_channels,
-            args.hidden_channels,
-            args.num_layers,
-            args.dropout,
-        ).to(device)
-    else:
-        raise ValueError("Not implemented")
+    model = gen_model(args, x, edge_feature).to(device)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 

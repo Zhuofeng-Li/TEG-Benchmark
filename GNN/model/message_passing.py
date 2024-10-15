@@ -353,7 +353,6 @@ class MessagePassing(torch.nn.Module):
                 if isinstance(data, (tuple, list)):
                     assert len(data) == 2
                     if isinstance(data[1 - dim], Tensor):
-                        print(data[0].shape, data[1].shape, size)
                         self._set_size(size, 1 - dim, data[1 - dim])
                     data = data[dim]
 
