@@ -5,9 +5,8 @@ from torch_geometric.nn import (
     TransformerConv,
     GATConv,
     GINEConv,
-    # GeneralConv,  # TODO: update latter
+    GeneralConv, 
 )
-from .general_conv import GeneralConv
 from torch.nn import Linear
 import torch.nn.functional as F
 import torch

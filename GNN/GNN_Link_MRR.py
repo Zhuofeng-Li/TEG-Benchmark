@@ -279,11 +279,6 @@ def main():
 
     x = x.to(device)
 
-    torch.manual_seed(42)
-    idx = torch.randperm(edge_split["train"]["source_node"].numel())[
-        : len(edge_split["valid"]["source_node"])
-    ]
-
     edge_index = edge_split["train"]["edge"].t()
     adj_t = SparseTensor.from_edge_index(
         edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)
