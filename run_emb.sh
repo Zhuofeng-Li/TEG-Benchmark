@@ -1,10 +1,10 @@
 #!/bin/bash
 
-python data_preprocess/generate_llm_emb.py \
-    --pkl_file Dataset/goodreads_history/processed/history.pkl \
-    --path Dataset/goodreads_history/emb \
-    --name history \
-    --model_name bert-base-uncased \
+# python data_preprocess/generate_llm_emb.py \
+#     --pkl_file Dataset/goodreads_history/processed/history.pkl \
+#     --path Dataset/goodreads_history/emb \
+#     --name history \
+#     --model_name bert-base-uncased \
  
 # python data_preprocess/generate_llm_emb.py \
 #     --pkl_file Dataset/twitter/processed/twitter.pkl \
@@ -17,3 +17,16 @@ python data_preprocess/generate_llm_emb.py \
 #     --path Dataset/amazon_movie/emb \
 #     --name movie \
 #     --model_name bert-base-uncased \
+
+
+# python data_preprocess/generate_llm_emb.py \
+#     --pkl_file Dataset/amazon_baby/processed/baby.pkl \
+#     --path Dataset/amazon_baby/emb \
+#     --name baby \
+#     --model_name bert-base-uncased \
+
+python data_preprocess/generate_llm_emb.py \
+    --pkl_file Dataset/reddit/processed/reddit.pkl \
+    --path Dataset/reddit/emb \
+    --name reddit \
+    --model_name bert-base-uncased \
