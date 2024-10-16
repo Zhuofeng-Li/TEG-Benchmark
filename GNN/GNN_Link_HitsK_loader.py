@@ -5,7 +5,6 @@ import pickle
 
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 
 from torch_sparse import SparseTensor
 
@@ -219,7 +218,7 @@ def gen_loader(args, edge_split, x, edge_index, adj_t):
         data=train_data,
         num_neighbors=[20, 10],
         edge_label_index=(val_negative_edge_label_index),
-        edge_label=torch.ones(val_negative_edge_label_index.shape[1]),
+        edge_label=torch.zeros(val_negative_edge_label_index.shape[1]),
         batch_size=args.batch_size,
         neg_sampling_ratio=0.0,
         shuffle=False,
@@ -241,7 +240,7 @@ def gen_loader(args, edge_split, x, edge_index, adj_t):
         data=train_data,
         num_neighbors=[20, 10],
         edge_label_index=(test_negative_edge_label_index),
-        edge_label=torch.ones(test_negative_edge_label_index.shape[1]),
+        edge_label=torch.zeros(test_negative_edge_label_index.shape[1]),
         batch_size=args.batch_size,
         neg_sampling_ratio=0.0,
         shuffle=False,
