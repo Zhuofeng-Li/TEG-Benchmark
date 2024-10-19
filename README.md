@@ -1,4 +1,4 @@
-<p align='center'> # TODO: update logo
+<p align='center'>
   <img height='40%'  src='assets/logo.png' />
 </p>
 
