@@ -66,7 +66,7 @@ def main():
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=1000,
+        default=500,
         help="Number of batch size for inference",
     )
     parser.add_argument("--fp16", type=bool, default=True, help="if fp16")
@@ -148,13 +148,13 @@ def main():
     def tokenize_function(examples):
         return tokenizer(examples["text"], padding=True, truncation=True, max_length=max_length, return_tensors="pt")
 
-    dataset = dataset.map(tokenize_function, batched=True, batch_size=1000)
+    dataset = dataset.map(tokenize_function, batched=True, batch_size=batch_size)
 
     if args.pretrain_path is not None:
-        model = AutoModel.from_pretrained(f"{args.pretrain_path}")
+        model = AutoModel.from_pretrained(f"{args.pretrain_path}",  attn_implementation="eager")
         print("Loading model from the path: {}".format(args.pretrain_path))
     else:
-        model = AutoModel.from_pretrained(model_name, trust_remote_code=True)
+        model = AutoModel.from_pretrained(model_name, trust_remote_code=True, attn_implementation="eager")
 
     model = model.to(args.device)
     CLS_Feateres_Extractor = CLSEmbInfModel(model)
@@ -166,7 +166,7 @@ def main():
         do_predict=True,
         per_device_eval_batch_size=batch_size,
         dataloader_drop_last=False,
-        dataloader_num_workers=24,
+        dataloader_num_workers=12,
         fp16_full_eval=args.fp16,
     )
 

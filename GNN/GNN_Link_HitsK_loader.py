@@ -1,3 +1,4 @@
+import tqdm
 from torch_geometric.data import Data
 from torch_geometric.loader import LinkNeighborLoader
 import argparse
@@ -46,7 +47,7 @@ def train(model, predictor, train_loader, optimizer, device):
     predictor.train()
 
     total_loss = total_examples = 0
-    for batch in train_loader:
+    for batch in tqdm.tqdm(train_loader):
         optimizer.zero_grad()
         batch = batch.to(device)
         h = model(batch.x, batch.adj_t)
@@ -270,10 +271,10 @@ def main():
     )
     parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--eval_steps", type=int, default=1)
-    parser.add_argument("--runs", type=int, default=5)
+    parser.add_argument("--runs", type=int, default=1)
     parser.add_argument("--test_ratio", type=float, default=0.08)
     parser.add_argument("--val_ratio", type=float, default=0.02)
-    parser.add_argument("--neg_len", type=str, default="10000")
+    parser.add_argument("--neg_len", type=str, default="5000")
     parser.add_argument(
         "--use_PLM_node",
         type=str,
@@ -321,7 +322,7 @@ def main():
         neg_len=args.neg_len,
     )
 
-    x = torch.load(args.use_PLM_node).float().to(device)
+    x = torch.load(args.use_PLM_node).float()
     edge_feature = torch.load(args.use_PLM_edge)[
         edge_split["train"]["train_edge_feature_index"]
     ].float()
@@ -330,7 +331,7 @@ def main():
     adj_t = SparseTensor.from_edge_index(
         edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)
     ).t()
-    adj_t = adj_t.to_symmetric().to(device)
+    adj_t = adj_t.to_symmetric()
 
     train_loader, val_loader, val_negative_loader, test_loader, test_negative_loader = (
         gen_loader(args, edge_split, x, edge_index, adj_t)

@@ -272,18 +272,16 @@ def main():
         neg_len=args.neg_len,
     )
 
-    x = torch.load(args.use_PLM_node).float().to(device)
+    x = torch.load(args.use_PLM_node).float()
     edge_feature = torch.load(args.use_PLM_edge)[
         edge_split["train"]["train_edge_feature_index"]
     ].float()
-
-    x = x.to(device)
 
     edge_index = edge_split["train"]["edge"].t()
     adj_t = SparseTensor.from_edge_index(
         edge_index, edge_feature, sparse_sizes=(graph.num_nodes, graph.num_nodes)
     ).t()
-    adj_t = adj_t.to_symmetric().to(device)
+    adj_t = adj_t.to_symmetric()
 
     train_loader, val_loader, test_loader = gen_loader(
         args, edge_split, x, edge_index, adj_t

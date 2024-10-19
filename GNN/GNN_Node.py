@@ -115,14 +115,14 @@ def process_data(args, device, data):  # TODO: process all data here
         int(product_indices.shape[0] * (train_ratio + val_ratio)) :
     ]
 
-    x = torch.load(args.use_PLM_node).squeeze().float().to(device)
+    x = torch.load(args.use_PLM_node).squeeze().float()
     edge_feature = torch.load(args.use_PLM_edge).squeeze().float()
 
     edge_index = data.edge_index
     adj_t = SparseTensor.from_edge_index(
         edge_index, edge_feature, sparse_sizes=(data.num_nodes, data.num_nodes)
     ).t()
-    adj_t = adj_t.to_symmetric().to(device)
+    adj_t = adj_t.to_symmetric()
     node_split = {"train": train_idx, "val": val_idx, "test": test_idx}
     return node_split, x, edge_feature, adj_t, y
 
