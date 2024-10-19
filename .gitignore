@@ -166,3 +166,5 @@ example/nodeproppred/*/*/*_dataset/
 Dataset
 GNN/GNN_Node.py
 wandb/
+tmp.ipynb
+tmp_link.sh
