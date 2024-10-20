@@ -50,18 +50,18 @@ We have constructed **10 comprehensive and representative TEG datasets (we will 
 Please check the experimental results and analysis from our [paper](https://arxiv.org/abs/2406.10310).
 
 ## Package Usage ⚙️
-### Requirements
+### Requirements 📋
 You can quickly install the corresponding dependencies,
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### More details about packages
+### More details about packages 📦
 
 The `GNN` folder is intended to house all GNN methods for link prediction and node classification (Please click [here](GNN/readme.md) to see more training details). The `data_preprocess` folder contains various scripts for generating TEG data. For instance, `data_preprocess/generate_llm_emb.py` generates text embeddings from LLM for the TEG in a high speed, while `data_preprocess/dataset.ipynb` facilitates uploading and downloading the [TEG datasets](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) we provide from Hugging Face.
 
-### Datasets setup
+### Datasets setup 🛠️
 
 You can go to the [Huggingface TEG-Benchmark](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) to find the datasets we upload! In each dataset folder, you can find a `.py` (downloads raw data) and a `.ipynb` file (processes raw data to TEG) in `raw` folder, `.pt` files (node and edge text embeddings we extract from the PLM) in `emb` folder, and a `.pkl` file processed from raw data (final Textual-edge graph file). 
 
@@ -72,7 +72,7 @@ from huggingface_hub import snapshot_download
 snapshot_download(repo_id="ZhuofengLi/TEG-Datasets", repo_type="dataset", local_dir="./Dataset")
 ```
 
-### Experiments
+### Running Experiments 🚀
 **GNN for Link Preidction:**
 ```bash
 bash run_gnn_link.sh
