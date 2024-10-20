@@ -92,7 +92,7 @@ You can follow the steps below:
 + Add your model to [`GNN/model/GNN_library.py`](https://github.com/Zhuofeng-Li/TEG-Benchmark/blob/main/GNN/model/GNN_library.py).
 + Update training codes' `args` and `gen_model()` function.
 
-## Star and Cite
+## Star and Cite ⭐
 
 Please star our repo 🌟 and cite our [paper](https://arxiv.org/abs/2406.10310) if you feel useful. Feel free to [email](mailto:zhuofengli12345@gmail.com) us (zhuofengli12345@gmail.com) if you have any questions.
 
