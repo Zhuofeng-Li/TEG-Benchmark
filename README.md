@@ -87,7 +87,7 @@ Please click [here](GNN/readme.md) to see more details.
 
 ## Create Your Own Dataset and Model
 You can follow the steps below:
-+ Align your dataset format with [ours](https://huggingface.co/datasets/Sherirto/CSTAG).
++ Align your dataset format with ours. Please check the dataset [README](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets) to find more details.
 + Generate your raw text embedding through [`generate_llm_emb.py`](https://github.com/Zhuofeng-Li/TEG-Benchmark/blob/main/data_preprocess/generate_llm_emb.py) with high speed.
 + Add your model to [`GNN/model/GNN_library.py`](https://github.com/Zhuofeng-Li/TEG-Benchmark/blob/main/GNN/model/GNN_library.py).
 + Update training codes' `args` and `gen_model()` function.
