@@ -38,8 +38,8 @@ We have constructed **10 comprehensive and representative TEG datasets (we will 
 | Amazon-Apps         |    100,480       |     752,937       | E-commerce          | ✅                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/amazon_apps/apps.md)        |
 | Amazon-Baby         | 186,790   | 1,241,083  | E-commerce          | ✅                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/amazon_baby/baby.md)        |
 | Reddit              | 512,776   | 256,388    | Social Networks     | ✅                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/reddit/reddit.md)             |
-| Twitter             | 60,785    | 74,666     | Social Networks     | ❌                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/twitter/twitter.md)            |
-| Citation            |           |            | Academic            | ✅                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/citation/citation.md)           |
+| Twitter             | 60,785    | 74,666     | Social Networks     | ✅                    | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/twitter/twitter.md)            |
+| Citation            |   169,343        |    1,166,243        | Academic            | ✅                   | ✅                | [Link](https://huggingface.co/datasets/ZhuofengLi/TEG-Datasets/blob/main/citation/citation.md)           |
 
 
 
